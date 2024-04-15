@@ -1,6 +1,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "preprocessor.h"
 
 /**
  * Main function to handle and assemble an input file.
@@ -17,21 +18,26 @@
  */
 int main(int argc, char *argv[])
 {
-    char *as_file, *am_file;
-
+    char **pargv;
+    /* char *as_file, *am_file */;
     if (argc < 2)
     {
         printf("ERROR: You need at least one argument.\n Example: ./assembler example");
         return 1;
     }
-    for (char **pargv = argv + 1; *pargv != argv[argc]; pargv++)
+    for (pargv = argv + 1; *pargv != argv[argc]; pargv++)
     {
         char *current_file = *pargv;
-        printf("Starting first pass - %s \n", current_file);
+
+        char *a = preproc(current_file);
+
+        printf("ggggg %c", a);
+
+        /* printf("Starting first pass - %s \n", current_file); */
 
         /* -- Execute First pass -- */
 
-        printf("Starting second pass - %s \n", current_file);
+        /* printf("Starting second pass - %s \n", current_file); */
 
         /* -- Execute First pass -- */
     }
