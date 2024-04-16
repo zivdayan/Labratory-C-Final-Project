@@ -1,1 +1,1 @@
-char preproc(char *bname);
+char *preproc(char *bname);

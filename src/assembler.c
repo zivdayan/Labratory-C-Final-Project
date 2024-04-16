@@ -27,17 +27,20 @@ int main(int argc, char *argv[])
     }
     for (pargv = argv + 1; *pargv != argv[argc]; pargv++)
     {
+        char *amFileName;
         char *current_file = *pargv;
 
-        char *a = preproc(current_file);
+        printf("Starting preprocessor - %s \n", current_file);
 
-        printf("ggggg %c", a);
+        amFileName = preproc(current_file);
 
-        /* printf("Starting first pass - %s \n", current_file); */
+        printf("Preprocessor done, file name: %s \n", amFileName);
+
+        printf("Starting first pass - %s \n", current_file);
 
         /* -- Execute First pass -- */
 
-        /* printf("Starting second pass - %s \n", current_file); */
+        printf("Starting second pass - %s \n", current_file);
 
         /* -- Execute First pass -- */
     }
