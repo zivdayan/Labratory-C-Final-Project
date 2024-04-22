@@ -1,5 +1,12 @@
+#define MAX_LENGTH_DATA_TYPE 80
+#define SYNTAX_ERROR_LENGTH 200
+
+
 struct ast {
-    char error[200];
+    char error[SYNTAX_ERROR_LENGTH];
+
+    // ** Define all possible directives **
+
     enum {
         ast_inst,
         ast_dir,
@@ -11,8 +18,6 @@ struct ast {
             const char *label;
             int number;
         } define;
-
-
         struct {
             enum {
                 ast_extern,
@@ -32,12 +37,57 @@ struct ast {
                     union {
                         char *label;
                         int number;
-                    }
+                    } data_options;
                 } data[80];
             } dir_options;
 
         } dir;
 
+        // ** Define all possible instructions **
+        struct {
+            enum {
+                inst_mov,
+                inst_cmp,
+                inst_add,
+                inst_sub,
+                inst_not,
+                inst_clr,
+                inst_lea,
+                inst_inc,
+                inst_inc,
+                inst_dec,
+                inst_jmp,
+                inst_bne,
+                inst_red,
+                inst_prn,
+                inst_jsr,
+                inst_rts,
+                inst_hlt
+            } inst_type;
+
+            struct {
+                enum {
+                    addrs_immed,
+                    addrs_labe,
+                    adddrs_index_const,
+                    adddrs_index_label,
+                    addrs_register
+                } addrs_mode;
+                union {
+                    int *immed;
+                    char *label;
+                    int reg;
+                    // Define the index addressing case - Example: mov x[2], r2
+                    struct {
+                        char * label;
+                        union {
+                            int number;
+                            char * labe;
+                        } index_option;
+                    } index;
+                }operand_options;
+            } operands[2];
+        } inst;
     } ast_options;
 
 };
