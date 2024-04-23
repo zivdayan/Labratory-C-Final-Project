@@ -69,7 +69,7 @@ static struct string_sep_result string_sep(char* str)
         s = strpbrk(str, SPACES);
         if (s)
         {
-            *s='\0'
+            *s='\0';
             s++;
             while(isspace(*s)) s++;
             if(*str == '\0') 

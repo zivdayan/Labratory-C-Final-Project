@@ -3,16 +3,15 @@
 
 
 struct ast {
-    char error[SYNTAX_ERROR_LENGTH];
-
+    char lineError[SYNTAX_ERROR_LENGTH];
+    const char * labelName;
     // ** Define all possible directives **
-
     enum {
         ast_inst,
         ast_dir,
         ast_define,
         ast_empty
-    } ast_type;
+    } line_type;
     union {
         struct {
             const char *label;
