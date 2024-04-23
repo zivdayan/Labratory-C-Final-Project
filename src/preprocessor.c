@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "preprocessor.h"
 
 #define as_file_ext ".as"
 #define am_file_ext ".am"
@@ -33,38 +34,33 @@ int macro_line(char *s, struct Macro **macro, struct Macro *macro_table, int *ta
 {
     char *c1 = s, *c2;
     struct Macro *f;
-    /* AFTER_SPACE(s);*/
-    c1 = strstr(s, "endmcr");
+    char *item1 = NULL;
+    char *item2 = NULL;
+    SPLIT_BY_FIRST_SPACE(s, item1, item2);
+
+    c1 = strstr(item1, "endmcr");
     if (c1)
     {
         *macro = NULL;
         return 0;
     }
-    c1 = strstr(s, "mcr");
+    c1 = strstr(item1, "mcr");
     if (c1)
     {
-        c1 += 4;
-        /* AFTER_SPACE(c1); */
-        c2 = strpbrk(c1, SPACES);
+        c2 = strpbrk(item2, SPACES);
         if (c2)
             *c2 = '\0';
-        strcpy(macro_table[*table_size].macroName, c1);
+        strcpy(macro_table[*table_size].macroName, item2);
         *macro = &macro_table[*table_size];
         (*table_size)++;
         return 1;
     }
 
-    c2 = strpbrk(s, SPACES);
+    c2 = strpbrk(item2, SPACES);
     if (c2)
-    {
-        c1 = c2;
-        /* AFTER_SPACE(c2); */
-        if (*c2 != '\0')
-            return 3;
-        *c1 = '\0';
-    }
+        *c2 = '\0';
 
-    f = searchMacro(macro_table, *table_size, s);
+    f = searchMacro(macro_table, *table_size, item2);
     if (f)
     {
         (*macro) = f;
