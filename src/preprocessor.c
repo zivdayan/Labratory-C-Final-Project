@@ -1,6 +1,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "preprocessor.h"
+
 
 #define as_file_ext ".as"
 #define am_file_ext ".am"
