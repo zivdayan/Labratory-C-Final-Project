@@ -4,6 +4,11 @@
 #include <stdlib.h>
 
 
+struct string_sep_result {
+    char *strings[80];
+    int strings_count;
+};
+
 struct ast {
     char lineError[SYNTAX_ERROR_LENGTH];
     const char * labelName;
@@ -82,7 +87,7 @@ struct ast {
                         char * label;
                         union {
                             int number;
-                            char * labe;
+                            char * label;
                         } index_option;
                     } index;
                 }operand_options;
@@ -96,3 +101,4 @@ struct ast get_ast_from_line(char* line);
 
 int is_keyword(char *str, char *collection[], int length);
 static int is_number(char *str, int max, int min, int * result);
+static int is_instruction_line(char* line, struct string_sep_result ssr);
