@@ -231,10 +231,21 @@ static int is_valid_line(char *line)
     return strlen(line) > MAX_LINE_LENGTH;
 }
 
-static int is_dir_line(char* line, struct string_sep_result ssr)
+static int line_contains_label_decleration(struct string_sep_result ssr)
 {
-    line[strcspn(line, "\r\n")] = 0; /* Mark end of line */
-    return is_keyword(ssr.strings[0],DIRECTIVES, DIRECTIVES_LEN);
+    return is_valid_label_declaration(ssr.strings[0]);
+}
+
+static int is_dir_line(struct string_sep_result ssr)
+{
+    char* initial_directive_keyword;
+   if(line_contains_label_decleration(ssr))
+        initial_directive_keyword = ssr.strings[1];
+    else
+        initial_directive_keyword = ssr.strings[0];
+    
+    return is_keyword(initial_directive_keyword,DIRECTIVES, DIRECTIVES_LEN);
+    
 }
 
 static int is_valid_extern_or_entry(struct string_sep_result ssr)
@@ -251,10 +262,12 @@ struct ast get_ast_from_line(char* line)
     if (line == '\n' || line == ';')
         return ast;
     
+    line[strcspn(line, "\r\n")] = 0; /* Mark end of line */
+
     struct string_sep_result ssr = string_sep(line);
     int error_code = 0;
     
-    if(is_dir_line(line, ssr))
+    if(is_dir_line(ssr))
     {
         char dir_type = ssr.strings[0];
         struct Directive dir_type_obj =  get_directive_obj_by_text(dir_type);
@@ -275,7 +288,7 @@ struct ast get_ast_from_line(char* line)
                     {
                         ast.line_type=ast_inst;
                         ast.line_type=ast_dir;
-                        
+
                         if (dir_type_obj.enum_type==DIR_ENTRY)
                             ast.ast_options.dir.dir_type=ast_entry;
                         if (dir_type_obj.enum_type==DIR_EXTERN)
