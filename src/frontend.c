@@ -172,6 +172,33 @@ static int check_label_decl_suffix(char *str)
 }
 
 
+static int is_valid_string_operand(struct string_sep_result operand)
+{
+    char* suffix = operand.strings[0];
+    char* prefix = operand.strings[operand.strings_count-1];
+    char* str;
+
+    /* Make sure the string is 'wrapped' with quotes, we take in account that it may contains spaces/tabs/etc. 
+    Thus, it will be delimitered but considered within the string */
+    if(!(suffix[0] == '"' && prefix[strlen(prefix)-1] == '"'))
+        return 0;
+    for (int i = 0; i < operand.strings_count; i++)
+    {
+        str = operand.strings[i];
+        while (*str) {
+            /* A string must contains valid ASCII chars */
+            if (!isalpha(*str)) {
+                return 0; /* Return false if character is not a digit or alphabet */ 
+            }
+            str++;
+        }
+    }
+
+    return 1;
+
+}
+
+
 /* TODO: add a check - label cannot be macro/const */ 
 
 
@@ -221,9 +248,11 @@ static void parse_operand(char* operand, int operand_type, struct ast* ast, stru
 
 }
 
-static void parse_operands(char* operands,  struct ast* ast)
+static void parse_operands(struct string_sep_result operands,  struct ast* ast)
 {
-
+    
+    
+    /*parse_operand()*/
 }
 
 static int is_valid_line(char *line)
@@ -231,18 +260,33 @@ static int is_valid_line(char *line)
     return strlen(line) > MAX_LINE_LENGTH;
 }
 
-static int line_contains_label_decleration(struct string_sep_result ssr)
+static char* remove_last_char(char* str)
 {
-    return is_valid_label_declaration(ssr.strings[0]);
+    if (str == NULL) {
+        return 0;
+    }
+
+    char *tmp_label;
+    tmp_label = str;
+    tmp_label[strlen(str)-1] = '\0';
+    return tmp_label;
+
+}
+
+static int line_contains_label_decleration(struct string_sep_result ssr, char **label)
+{   
+    char *tmp_label = ssr.strings[0];
+    int line_contains_label_dec = is_valid_label_declaration(tmp_label);
+    if(line_contains_label_dec)
+        *label = remove_last_char(tmp_label); /* Removed the colon from "LABEL:" */
+
+    return is_valid_label_declaration(tmp_label);
 }
 
 static int is_dir_line(struct string_sep_result ssr)
 {
     char* initial_directive_keyword;
-   if(line_contains_label_decleration(ssr))
-        initial_directive_keyword = ssr.strings[1];
-    else
-        initial_directive_keyword = ssr.strings[0];
+    initial_directive_keyword = ssr.strings[0];
     
     return is_keyword(initial_directive_keyword,DIRECTIVES, DIRECTIVES_LEN);
     
@@ -254,19 +298,71 @@ static int is_valid_extern_or_entry(struct string_sep_result ssr)
 }
 
 
-struct ast get_ast_from_line(char* line)
+static int check_data_commas_validity(struct string_sep_result operands)
+{
+    /* Check a case in which there is a comma at the start/end of operands
+    Example:
+     .data ,22,22,32
+    OR
+    .data 5,42,1,
+    */
+   char* first_operand = operands.strings[0];
+   char* last_operand = operands.strings[operands.strings_count];
+   char* left_operand;
+   char *right_operand;
+
+   if( (',' == first_operand[0]) || ( ',' == last_operand[strlen(last_operand) - 1])  ) return 0;
+
+   for (int i = 0; i < operands.strings_count - 1; i++)
+   {
+    left_operand = operands.strings[i];
+    right_operand = operands.strings[i+1];
+
+    /* This statement makes sure that between each operand (space/tab/etc delimitered) there is exactly ONE comma seperating
+    
+     */
+    if( !((left_operand[strlen(left_operand)-1] == ',' && right_operand[0] != ',')  || (left_operand[strlen(left_operand)-1] != ',' && right_operand[0] == ',')) )
+        return 0;
+   }
+
+   return 1;
+
+}
+
+
+/**
+ * @brief Get the Abstract syntax tree from an assembly line.
+ * 
+ * @param line  - a string represents an assembly line of code. 
+ * @return a point to a struct ast object - parsed representation of the given line
+ */
+struct ast *get_ast_from_line(char* line)
 {
     char *label;
     int is_extern, is_entry;
-    struct ast ast = {0};
+    struct string_sep_result ssr;
+    struct string_sep_result operands;
+
+    struct ast *ast_ptr = malloc(sizeof(struct ast));
+    struct ast ast = *ast_ptr;
+
+
     if (line == '\n' || line == ';')
-        return ast;
+        return ast_ptr;
     
     line[strcspn(line, "\r\n")] = 0; /* Mark end of line */
-
-    struct string_sep_result ssr = string_sep(line);
+    
+    ssr = string_sep(line);
     int error_code = 0;
     
+    if(line_contains_label_decleration(ssr, &label))
+    {
+        ast.labelName = label; 
+        ssr = strip_first_element(ssr); /* Truncated the "LABEL:" */
+        operands = strip_first_element(ssr);
+    }
+        
+
     if(is_dir_line(ssr))
     {
         char dir_type = ssr.strings[0];
@@ -274,43 +370,53 @@ struct ast get_ast_from_line(char* line)
         switch(dir_type_obj.enum_type)
         {
             case DIR_DATA:
-                ;
+                ast.line_type=ast_dir;
+                ast.ast_options.dir.dir_type=ast_data;
+                if(check_data_commas_validity(operands))
+                    parse_operands(operands,ast_ptr);
+                else
+                    goto invalid_syntax;
 
             case DIR_STRING:
-                ;
+                ast.line_type=ast_dir;
+                ast.ast_options.dir.dir_type=ast_string;
+                if(is_valid_string_operand(operands))
+                    parse_operands(operands,ast_ptr);
+                else
+                    goto invalid_syntax;
 
             case DIR_EXTERN:
             case DIR_ENTRY:
                 if(is_valid_extern_or_entry(ssr))
                 {
-                    *label = ssr.strings[0];
-                    if(is_valid_label(label))
+                    if(is_valid_label(ssr.strings[1]))
                     {
-                        ast.line_type=ast_inst;
                         ast.line_type=ast_dir;
 
                         if (dir_type_obj.enum_type==DIR_ENTRY)
                             ast.ast_options.dir.dir_type=ast_entry;
+
                         if (dir_type_obj.enum_type==DIR_EXTERN)
                             ast.ast_options.dir.dir_type=ast_extern;
 
                         ast.ast_options.dir.dir_options.label=label;
-                        return ast;
                     }
-                };
+                }
+                else
+                    goto invalid_syntax;
             default:
-                ;
-        }
-
-
+                goto invalid_syntax;
 
     }
 
+    invalid_syntax:
+        free(ast_ptr);
+        goto cleanup;
+
+    cleanup:
+        free(ast_ptr);
         
-
-
-
-    return ast;
+    return ast_ptr;
 
 }
 
@@ -341,4 +447,16 @@ static struct string_sep_result string_sep(char * str) {
     ssr.strings_count = strings_count;
 
     return ssr;
+}
+
+static struct string_sep_result strip_first_element(struct string_sep_result ssr)
+{
+    struct string_sep_result stripped_ssr = {0};
+    stripped_ssr.strings_count = ssr.strings_count - 1;
+    for (int i = 0; i < stripped_ssr.strings_count; i++)
+        stripped_ssr.strings[i] = ssr.strings[i+1];
+    
+    return stripped_ssr;
+    
+
 }

@@ -2,6 +2,7 @@
 #define SYNTAX_ERROR_LENGTH 200
 #include "global_consts.h"
 #include <stdlib.h>
+#include <string.h>
 
 
 struct string_sep_result {
@@ -97,7 +98,7 @@ struct ast {
 
 };
 
-struct ast get_ast_from_line(char* line);
+struct ast *get_ast_from_line(char* line);
 
 int is_keyword(char *str, char *collection[], int length);
 static int is_number(char *str, int max, int min, int * result);
