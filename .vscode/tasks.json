@@ -18,6 +18,9 @@
 				"kind": "build",
 				"isDefault": true
 			},
+			"presentation": {
+				"close": true
+			}
 		}
 	]
 }
