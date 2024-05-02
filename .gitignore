@@ -52,5 +52,3 @@ Mkfile.old
 dkms.conf
 
 Tests/.DS_Store
-*.am
-src/assembler
