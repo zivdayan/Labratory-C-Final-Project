@@ -13,6 +13,8 @@ char *REGISTERS[] = {"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7"};
 
 char *DIRECTIVES[] = {".data", ".string", ".extern", ".entry"};
 
+char *DEFINE=".define";
+
 struct Directive
 {
     char *text_type;
@@ -25,6 +27,7 @@ struct Directive
     } enum_type;
 };
 
+
 struct Directive directives[] = {
     [0] = {.text_type = '.data', .enum_type = DIR_DATA},
     [1] = {.text_type = '.string', .enum_type = DIR_STRING},
@@ -32,7 +35,7 @@ struct Directive directives[] = {
     [3] = {.text_type = '.entry', .enum_type = DIR_ENTRY}};
 
 char *INSTRUCTIONS[] = {"mov", "cmp", "add", "sub", "not", "clr", "lea", "inc", "dec", "jmp", "bne", "red", "prn", "jsr", "rts", "hlt"};
-struct inst
+struct Instruction
 {
     char *name;
     int opcode;
@@ -45,7 +48,7 @@ int syntax_error_line_too_long(char *file_name)
     return 0;
 }
 
-struct inst inst_table[16] = {
+struct Instruction inst_table[16] = {
     {"mov", 0, "0123", "123"},
     {"cmp", 1, "0123", "0123"},
     {"add", 2, "0123", "123"},
@@ -75,6 +78,21 @@ static struct Directive get_directive_obj_by_text(char *inst)
 
     return default_dir;
 }
+
+
+static struct Instruction get_instruction_obj_by_text(char *inst)
+{
+    struct Instruction default_dir = {0};
+
+    for (int i = 0; i < INSTRUCTIONS_LEN; i++)
+    {
+        if (inst == inst_table[i].name)
+            return inst_table[i];
+    }
+
+    return default_dir;
+}
+
 
 static int is_basic_valid_string_label(char *str)
 {
@@ -320,6 +338,24 @@ static int is_dir_line(struct string_sep_result ssr)
     return is_keyword(initial_directive_keyword, DIRECTIVES, DIRECTIVES_LEN);
 }
 
+static int is_define_line(struct string_sep_result ssr)
+{
+    char *initial_directive_keyword;
+    initial_directive_keyword = ssr.strings[0];
+
+    return DEFINE == initial_directive_keyword;
+
+
+}
+
+static int is_instruction_line(struct string_sep_result ssr)
+{
+    char *initial_directive_keyword;
+    initial_directive_keyword = ssr.strings[0];
+
+    return is_keyword(initial_directive_keyword, INSTRUCTIONS, INSTRUCTIONS_LEN);
+}
+
 static int is_valid_extern_or_entry(struct string_sep_result ssr)
 {
     return (ssr.strings_count == 2) && (is_valid_label(ssr.strings[1]));
@@ -396,9 +432,25 @@ struct ast *get_ast_from_line(char *line, struct Node *macro_list)
         operands = strip_first_element(ssr);
     }
 
+    if(is_define_line(ssr))
+    {
+        ast.line_type = ast_define;
+        
+    }
+
+    if(is_instruction_line(ssr))
+    {
+        char *inst_type = ssr.strings[0];
+        struct Instruction inst_type_obj = get_instruction_obj_by_text(inst_type);
+        ast.line_type = ast_inst;
+        ast.ast_options.inst.inst_type=inst_type_obj.opcode;
+
+        parse_operands(operands,ast_ptr);
+    }
+
     if (is_dir_line(ssr))
     {
-        char dir_type = ssr.strings[0];
+        char *dir_type = ssr.strings[0];
         struct Directive dir_type_obj = get_directive_obj_by_text(dir_type);
         switch (dir_type_obj.enum_type)
         {

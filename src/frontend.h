@@ -54,22 +54,22 @@ struct ast {
         /* Define all possible instructions */
         struct {
             enum {
-                inst_mov,
-                inst_cmp,
-                inst_add,
-                inst_sub,
-                inst_not,
-                inst_clr,
-                inst_lea,
-                inst_inc,
-                inst_dec,
-                inst_jmp,
-                inst_bne,
-                inst_red,
-                inst_prn,
-                inst_jsr,
-                inst_rts,
-                inst_hlt
+                inst_mov=0,
+                inst_cmp=1,
+                inst_add=2,
+                inst_sub=3,
+                inst_not=4,
+                inst_clr=5,
+                inst_lea=6,
+                inst_inc=7,
+                inst_dec=8,
+                inst_jmp=9,
+                inst_bne=10,
+                inst_red=11,
+                inst_prn=12,
+                inst_jsr=13,
+                inst_rts=14,
+                inst_hlt=15
             } inst_type;
 
             struct {
@@ -99,8 +99,9 @@ struct ast {
 
 };
 
-struct ast *get_ast_from_line(char* line);
+struct ast *get_ast_from_line(char *line, struct Node *macro_list);
 
 int is_keyword(char *str, char *collection[], int length);
 static int is_number(char *str, int max, int min, int * result);
-static int is_instruction_line(char* line, struct string_sep_result ssr);
+static int is_instruction_line(struct string_sep_result ssr);
+static int is_dir_line(struct string_sep_result ssr);
