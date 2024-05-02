@@ -33,3 +33,10 @@ struct translation_unit {
     int entries_count;
 
 };
+
+
+struct Node
+{
+  char * value;
+  struct Node *next;
+};

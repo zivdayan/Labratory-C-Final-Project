@@ -362,7 +362,7 @@ static int check_data_commas_validity(struct string_sep_result operands)
  * @param line  - a string represents an assembly line of code.
  * @return a point to a struct ast object - parsed representation of the given line
  */
-struct ast *get_ast_from_line(char *line)
+struct ast *get_ast_from_line(char *line, struct Node *macro_list)
 {
     char *label;
     char *original_line;

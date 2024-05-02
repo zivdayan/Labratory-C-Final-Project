@@ -3,6 +3,7 @@
 #include "global_consts.h"
 #include <stdlib.h>
 #include <string.h>
+#include "structs.h"
 
 
 struct string_sep_result {
