@@ -28,6 +28,33 @@ struct Macro *searchMacro(struct Macro *macroTable, const int tableSize, const c
     return NULL;
 }
 
+static void get_macro_list(struct Macro *macroTable, int macro_count, struct Node *output_macro_list)
+{
+    struct Node *curr_node;
+    struct Node *next_node;
+    int i=0;
+
+    if(!macro_count)
+        return;
+
+    curr_node = malloc(sizeof(struct Node));
+    curr_node->value=macroTable[i++].macroName;
+
+    output_macro_list = curr_node;
+    
+    while(i < macro_count)
+    {
+        next_node = malloc(sizeof(struct Node));
+        next_node->value=macroTable[i++].macroName;
+
+        curr_node->next=next_node;
+        curr_node=next_node;
+    }
+
+    
+    
+}
+
 int macro_line(char *s, struct Macro **macro, struct Macro *macro_table, int *table_size)
 {
     char *item1 = NULL;
@@ -81,7 +108,7 @@ char *strcatWithMalloc(const char *s1, const char *s2)
     return result;
 }
 
-char *preproc(char *bname)
+char *preproc(char *bname, struct Node *output_macro_list)
 {
     char line[MAX_LINE_LEN] = {0};
     struct Macro *macro_table = malloc(10 * sizeof(struct Macro));
@@ -138,6 +165,8 @@ char *preproc(char *bname)
 
     fclose(am_file);
     fclose(as_file);
+
+    get_macro_list(macro_table, macro_count, output_macro_list);
 
     for (int i = 0; i < macro_count; i++)
     {

@@ -1,3 +1,5 @@
+#include "structs.h"
+
 #define SPLIT_BY_FIRST_SPACE(str, item1, item2)     \
     do                                              \
     {                                               \
@@ -15,4 +17,4 @@
         }                                           \
     } while (0)
 
-char *preproc(char *bname);
+char *preproc(char *bname, struct Node *output_macro_list);

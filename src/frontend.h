@@ -1,11 +1,20 @@
 #define MAX_LENGTH_DATA_TYPE 80
 #define SYNTAX_ERROR_LENGTH 200
+#include "global_consts.h"
+#include <stdlib.h>
+#include <string.h>
+#include "structs.h"
 
+
+struct string_sep_result {
+    char *strings[80];
+    int strings_count;
+};
 
 struct ast {
     char lineError[SYNTAX_ERROR_LENGTH];
     const char * labelName;
-    // ** Define all possible directives **
+    /* Define all possible directives */ 
     enum {
         ast_inst,
         ast_dir,
@@ -42,7 +51,7 @@ struct ast {
 
         } dir;
 
-        // ** Define all possible instructions **
+        /* Define all possible instructions */
         struct {
             enum {
                 inst_mov,
@@ -52,7 +61,6 @@ struct ast {
                 inst_not,
                 inst_clr,
                 inst_lea,
-                inst_inc,
                 inst_inc,
                 inst_dec,
                 inst_jmp,
@@ -76,12 +84,12 @@ struct ast {
                     int *immed;
                     char *label;
                     int reg;
-                    // Define the index addressing case - Example: mov x[2], r2
+                    /* Define the index addressing case - Example: mov x[2], r2 */ 
                     struct {
                         char * label;
                         union {
                             int number;
-                            char * labe;
+                            char * label;
                         } index_option;
                     } index;
                 }operand_options;
@@ -91,4 +99,8 @@ struct ast {
 
 };
 
-struct ast get_ast_from_line(char* line);
+struct ast *get_ast_from_line(char* line);
+
+int is_keyword(char *str, char *collection[], int length);
+static int is_number(char *str, int max, int min, int * result);
+static int is_instruction_line(char* line, struct string_sep_result ssr);
