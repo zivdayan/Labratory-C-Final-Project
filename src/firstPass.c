@@ -2,20 +2,9 @@
 #include "frontend.h"
 #include "structs.h"
 #include <string.h>
+#include "middle_common.h";
 
 // Todo - change names and errors;
-struct symbol *symbolLookUp(struct symbol *symbol_table, const int symbol_table_size, const char *name)
-{
-    int i;
-    for (i = 0; i < symbol_table_size; i++)
-    {
-        if (strcmp(symbol_table[i].symName, name) == 0)
-        {
-            return &symbol_table[i];
-        }
-    }
-    return NULL;
-}
 
 int firstPass(struct translation_unit *prog, const char *amFileName, FILE *amFile, struct Node *macro_list)
 {
@@ -72,13 +61,13 @@ int firstPass(struct translation_unit *prog, const char *amFileName, FILE *amFil
             }
             else
             {
-                ic += (line_struct.ast_options.inst.operands[0].addrs_mode >= data_number) + (line_struct.ast_options.inst.operands[1].addrs_mode >= data_number);
+                ic += (line_struct.ast_options.inst.operands[0].addrs_mode >= addrs_immed) + (line_struct.ast_options.inst.operands[1].addrs_mode >= addrs_immed);
             }
         }
         else if (line_struct.line_type == ast_dir && line_struct.ast_options.dir.dir_type >= ast_data)
         {
-            memcpy(&prog->data_image[prog->DC], line_struct.ast_options.dir.dir_options.data, line_struct.ast_options.dir.dir_options.data->data_options.number * sizeof(int));
-            dc += line_struct.ast_options.dir.dir_options.data->data_options.number;
+            memcpy(&prog->data_image[prog->DC], line_struct.ast_options.dir.dir_options.data_array.data, line_struct.ast_options.dir.dir_options.data_array.data_length * sizeof(int));
+            dc += line_struct.ast_options.dir.dir_options.data_array.data_length;
             prog->DC = dc;
         }
         else if (line_struct.line_type == ast_dir && line_struct.ast_options.dir.dir_type <= ast_entry)
