@@ -79,6 +79,18 @@ static struct Directive get_directive_obj_by_text(char *inst)
     return default_dir;
 }
 
+static struct Instruction get_instruction_obj_by_opcode(int opcode)
+{
+    struct Instruction default_dir = {0};
+
+    for (int i = 0; i < INSTRUCTIONS_LEN; i++)
+    {
+        if (opcode == inst_table[i].opcode)
+            return inst_table[i];
+    }
+
+    return default_dir;
+}
 
 static struct Instruction get_instruction_obj_by_text(char *inst)
 {
@@ -113,10 +125,11 @@ static int is_saved_keyword(char *str)
     return (is_reg || is_instruction || is_instruction);
 }
 
-static int is_number(char *str, int max, int min, int *result)
+static int is_number(char *str, int max, int min)
 {
 
     char *endstr;
+    long result;
 
     if (str == NULL || *str == '\0')
     {
@@ -127,7 +140,9 @@ static int is_number(char *str, int max, int min, int *result)
     if (!(*str == '+' || *str == '-'))
         return 0;
 
-    strtol(str, &endstr, 10);
+    result = strtol(str, &endstr, 10);
+
+    if(!( (min<=result && result<=max) || (min==NULL || max==NULL) ))
 
     if (*endstr == '\0')
         return 1;
@@ -274,8 +289,49 @@ static void parse_string_dir(char* line, struct ast *ast_ptr)
     
 }
 
-static void parse_operand(char *operand, int operand_type, struct ast *ast, struct inst *inst)
+static int parse_data_dir_operands(struct string_sep_result operands, struct ast *ast_ptr)
 {
+    struct ast ast = *ast_ptr;
+    ast.ast_options.dir.dir_options.data_array.data_length=0;
+    for (int i = 0; i < operands.strings_count; i++)
+    {
+        char* operand = operands.strings[i];
+        int curr_array_length = ast.ast_options.dir.dir_options.data_array.data_length;
+
+       if(i%2==1)
+        {
+            if(operand != ",")
+                return 0;
+            else
+                continue;
+        }
+        
+        
+        if(is_number(operand, NULL, NULL))
+        {
+            ast.ast_options.dir.dir_options.data_array.data[curr_array_length].data_type = data_number;
+            ast.ast_options.dir.dir_options.data_array.data[curr_array_length].data_value.number = atoi(operand);
+        }
+        if(is_valid_label(operand))
+        {
+            ast.ast_options.dir.dir_options.data_array.data[curr_array_length].data_type=data_label;
+            strcpy(ast.ast_options.dir.dir_options.data_array.data[curr_array_length].data_value.label,operand);
+        }
+        
+        ast.ast_options.dir.dir_options.data_array.data_length++;
+            
+    }
+    
+}
+
+static void parse_inst_operand(char *operand, int operand_type, struct ast *ast, struct Instruction inst)
+{
+    ast->ast_options.inst.operands[operand_type].addrs_mode;
+
+    ast->ast_options.inst.operands[operand_type].operand_options;
+
+
+
 }
 
 
@@ -284,22 +340,65 @@ static void parse_operands(struct string_sep_result operands, struct ast *ast_pt
     struct ast ast = *ast_ptr;
     switch (ast.line_type)
     {
-    case ast_dir:
-        switch (ast.ast_options.dir.dir_type)
-        {
-        case ast_data:
-            break;
-        default:
-            break;
-        }
-        break;
-    case ast_inst:
-        break;
-    default:
-        break;
-    }
+        case ast_dir:
+            switch (ast.ast_options.dir.dir_type)
+            {
+                case ast_data:
+                    parse_data_dir_operands(operands,ast_ptr);
+                    break;
 
-    /*parse_operand()*/
+                default:
+                    break;
+            }
+            break;
+
+        case ast_inst:
+            struct Instruction inst = get_instruction_obj_by_opcode((int)ast.ast_options.inst.inst_type);
+
+            char *src_operand;
+            char *target_operand;
+            
+
+
+            switch(ast.ast_options.inst.inst_type)
+            {
+                case inst_mov:
+                case inst_cmp:
+                case inst_add:
+                case inst_sub:
+                case inst_lea:
+
+                    strcpy(src_operand,operands.strings[0]);
+                    strcpy(target_operand,operands.strings[2]);
+                    parse_inst_operand(src_operand,SRC_OPERAND,ast_ptr,inst);
+                    parse_inst_operand(target_operand,TARGET_OPERAND,ast_ptr,inst);
+                
+                case inst_not:
+                case inst_clr:
+                case inst_inc:
+                case inst_dec:
+                case inst_jmp:
+                case inst_bne:              
+                case inst_red:
+                case inst_prn:
+                case inst_jsr:
+                    strcpy(target_operand,operands.strings[0]);
+                    parse_inst_operand(target_operand,TARGET_OPERAND,ast_ptr,inst);    
+                    break;
+
+                case inst_rts:
+                case inst_hlt:
+                    break;
+            }
+            break;
+
+        case ast_define:
+            strcpy(ast.ast_options.define.label, operands.strings[0]);
+            ast.ast_options.define.number=operands.strings[2];
+            break;
+        default:    
+            break;
+    }
 }
 
 static int is_valid_line(char *line)
@@ -361,10 +460,39 @@ static int is_valid_extern_or_entry(struct string_sep_result ssr)
     return (ssr.strings_count == 2) && (is_valid_label(ssr.strings[1]));
 }
 
+static int check_define_validity(struct string_sep_result operands)
+{
+    if(3 != operands.strings_count)
+        return 0;
+
+    char *variable = operands.strings[0];
+    char *equals = operands.strings[1];
+    char *value = operands.strings[2];
+
+    return (is_valid_label(variable) && "=" == equals && is_number(value, NULL, NULL));
+
+}
+
+static int check_inst_commas_validity(struct string_sep_result operands)
+{
+    if(operands.strings_count == 1)
+        if(operands.strings[0] != ',')
+            return 1;
+        else
+            return 0;
+
+
+    if(operands.strings_count!=3)
+        return 0;
+
+    if (operands.strings[0] != "," && operands.strings[1]=="," && operands.strings[2]!=',')
+        return 1;
+    return 0;
+}
 static int check_data_commas_validity(struct string_sep_result operands)
 {
     char *first_operand = operands.strings[0];
-    char *last_operand = operands.strings[operands.strings_count];
+    char *last_operand = operands.strings[operands.strings_count - 1];
     char *left_operand;
     char *right_operand;
 
@@ -408,6 +536,7 @@ struct ast *get_ast_from_line(char *line, struct Node *macro_list)
 
     struct ast *ast_ptr = malloc(sizeof(struct ast));
     struct ast ast = *ast_ptr;
+    int label_declared=0;
 
     if (line == '\n' || line == ';')
         return ast_ptr;
@@ -416,7 +545,8 @@ struct ast *get_ast_from_line(char *line, struct Node *macro_list)
     space seperated in order to not treat them as one string.
     For example .data 3,2,3 would produce 3,2,3 as a single operand. Appending a space to the comma, helps
     us to parse every line correclty, without compromising the context/logic.  */
-    comma_sanitize(&line);
+    char_sanitize(&line, ",");
+    char_sanitize(&line, "=");
 
     strcpy(original_line,line);
 
@@ -427,25 +557,33 @@ struct ast *get_ast_from_line(char *line, struct Node *macro_list)
 
     if (line_contains_label_decleration(ssr, &label))
     {
-        ast.labelName = label;
+        strcpy(ast.labelName,label);
         ssr = strip_first_element(ssr); /* Truncated the "LABEL:" */
         operands = strip_first_element(ssr);
+        label_declared=1;
     }
 
     if(is_define_line(ssr))
     {
+        if(label_declared)
+            goto invalid_syntax;
         ast.line_type = ast_define;
-        
+        if(check_define_validity(operands))
+            parse_operands(operands,ast_ptr);
+        else
+            goto invalid_syntax;
     }
 
     if(is_instruction_line(ssr))
-    {
+    {   
         char *inst_type = ssr.strings[0];
         struct Instruction inst_type_obj = get_instruction_obj_by_text(inst_type);
         ast.line_type = ast_inst;
         ast.ast_options.inst.inst_type=inst_type_obj.opcode;
-
-        parse_operands(operands,ast_ptr);
+        if(check_inst_commas_validity(operands))
+            parse_operands(operands,ast_ptr);
+        else
+            goto invalid_syntax;
     }
 
     if (is_dir_line(ssr))
@@ -461,6 +599,7 @@ struct ast *get_ast_from_line(char *line, struct Node *macro_list)
                 parse_operands(operands, ast_ptr);
             else
                 goto invalid_syntax;
+            break;
 
         case DIR_STRING:
             ast.line_type = ast_dir;
@@ -474,6 +613,7 @@ struct ast *get_ast_from_line(char *line, struct Node *macro_list)
                 
             else
                 goto invalid_syntax;
+            break;
 
         case DIR_EXTERN:
         case DIR_ENTRY:
@@ -494,8 +634,10 @@ struct ast *get_ast_from_line(char *line, struct Node *macro_list)
             }
             else
                 goto invalid_syntax;
+            break;
         default:
             goto invalid_syntax;
+            break;
         }
 
     invalid_syntax:
@@ -504,7 +646,6 @@ struct ast *get_ast_from_line(char *line, struct Node *macro_list)
 
     cleanup:
         free(ast_ptr);
-
         return ast_ptr;
     }
 }

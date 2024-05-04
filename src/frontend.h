@@ -38,15 +38,18 @@ struct ast {
                 char * label;
                 char * string;
                 struct {
-                    enum {
-                        data_label,
-                        data_number
-                    } data_type;
-                    union {
-                        char *label;
-                        int number;
-                    } data_options;
-                } data[80];
+                    int data_length;
+                        struct {
+                        enum {
+                            data_label,
+                            data_number
+                        } data_type;
+                        union {
+                            char *label;
+                            int number;
+                        } data_value;
+                    } data[80];
+                } data_array;
             } dir_options;
 
         } dir;
@@ -75,7 +78,7 @@ struct ast {
             struct {
                 enum {
                     addrs_immed,
-                    addrs_labe,
+                    addrs_label,
                     adddrs_index_const,
                     adddrs_index_label,
                     addrs_register
@@ -93,6 +96,7 @@ struct ast {
                         } index_option;
                     } index;
                 }operand_options;
+                /*operands = {source-operand, target-operand}*/
             } operands[2];
         } inst;
     } ast_options;
@@ -102,6 +106,7 @@ struct ast {
 struct ast *get_ast_from_line(char *line, struct Node *macro_list);
 
 int is_keyword(char *str, char *collection[], int length);
-static int is_number(char *str, int max, int min, int * result);
+static int is_number(char *str, int max, int min);
 static int is_instruction_line(struct string_sep_result ssr);
 static int is_dir_line(struct string_sep_result ssr);
+static void parse_inst_operand(char *operand, int operand_type, struct ast *ast, struct inst *inst);
