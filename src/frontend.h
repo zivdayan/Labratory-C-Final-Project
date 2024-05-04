@@ -5,44 +5,54 @@
 #include <string.h>
 #include "structs.h"
 
-
-struct string_sep_result {
+struct string_sep_result
+{
     char *strings[80];
     int strings_count;
 };
 
-struct ast {
+struct ast
+{
     char lineError[SYNTAX_ERROR_LENGTH];
-    const char * labelName;
-    /* Define all possible directives */ 
-    enum {
+    const char *labelName;
+    /* Define all possible directives */
+    enum
+    {
         ast_inst,
         ast_dir,
         ast_define,
         ast_empty
     } line_type;
-    union {
-        struct {
+    union
+    {
+        struct
+        {
             const char *label;
             int number;
         } define;
-        struct {
-            enum {
+        struct
+        {
+            enum
+            {
                 ast_extern,
                 ast_entry,
                 ast_string,
                 ast_data
             } dir_type;
 
-            union {
-                char * label;
-                char * string;
-                struct {
-                    enum {
+            union
+            {
+                char *label;
+                char *string;
+                struct
+                {
+                    enum
+                    {
                         data_label,
                         data_number
                     } data_type;
-                    union {
+                    union
+                    {
                         char *label;
                         int number;
                     } data_options;
@@ -52,8 +62,10 @@ struct ast {
         } dir;
 
         /* Define all possible instructions */
-        struct {
-            enum {
+        struct
+        {
+            enum
+            {
                 inst_mov,
                 inst_cmp,
                 inst_add,
@@ -72,35 +84,39 @@ struct ast {
                 inst_hlt
             } inst_type;
 
-            struct {
-                enum {
+            struct
+            {
+                enum
+                {
                     addrs_immed,
                     addrs_labe,
                     adddrs_index_const,
                     adddrs_index_label,
                     addrs_register
                 } addrs_mode;
-                union {
+                union
+                {
                     int *immed;
                     char *label;
                     int reg;
-                    /* Define the index addressing case - Example: mov x[2], r2 */ 
-                    struct {
-                        char * label;
-                        union {
+                    /* Define the index addressing case - Example: mov x[2], r2 */
+                    struct
+                    {
+                        char *label;
+                        union
+                        {
                             int number;
-                            char * label;
+                            char *label;
                         } index_option;
                     } index;
-                }operand_options;
+                } operand_options;
             } operands[2];
         } inst;
     } ast_options;
-
 };
 
-struct ast *get_ast_from_line(char* line);
+struct ast *get_ast_from_line(char *line, struct Node *macro_list);
 
 int is_keyword(char *str, char *collection[], int length);
-static int is_number(char *str, int max, int min, int * result);
-static int is_instruction_line(char* line, struct string_sep_result ssr);
+static int is_number(char *str, int max, int min, int *result);
+static int is_instruction_line(char *line, struct string_sep_result ssr);

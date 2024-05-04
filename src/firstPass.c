@@ -1,20 +1,135 @@
 #include "firstPass.h"
+#include "frontend.h"
+#include "structs.h"
+#include <string.h>
 
-int firstPass(struct tranlsation_unit *prog, const char * amFileName, FILE * amFile, struct Node *macro_list)
+// Todo - change names and errors;
+struct symbol *symbolLookUp(struct symbol *symbol_table, const int symbol_table_size, const char *name)
+{
+    int i;
+    for (i = 0; i < symbol_table_size; i++)
+    {
+        if (strcmp(symbol_table[i].symName, name) == 0)
+        {
+            return &symbol_table[i];
+        }
+    }
+    return NULL;
+}
+
+int firstPass(struct translation_unit *prog, const char *amFileName, FILE *amFile, struct Node *macro_list)
 {
     char line[81] = {0};
-    int ic=100, dc=0;
-    int errorFlag=0;
-    int lineC=1;
+    int ic = 100, dc = 0;
+    int errorFlag = 0;
+    int lineC = 1;
     int i;
 
-    struct ast line_struct={0};
+    struct ast line_struct = {0};
     struct symbol *SymFind;
 
-    while(fgets(line, sizeof(line), amFile))
+    while (fgets(line, sizeof(line), amFile))
     {
-        line_struct = get_ast_from_line(line, macro_list);
+        line_struct = *get_ast_from_line(line, macro_list);
+        if (line_struct.lineError[0] != '\0')
+        {
+            printf("%s:%d:syntax error: %s", amFileName, lineC, line_struct.lineError);
+            lineC++;
+            errorFlag = 1;
+            continue;
+        }
+        if (line_struct.labelName != NULL && (line_struct.line_type == ast_inst || (line_struct.line_type == ast_dir && line_struct.ast_options.dir.dir_type == ast_data)))
+        {
+            SymFind = symbolLookUp(prog->symbol_table, prog->symCount, line_struct.labelName);
+            if (SymFind)
+            {
+                if (SymFind->symType == symEntry)
+                {
+                    SymFind->symType = line_struct.line_type == ast_inst ? symEntryCode : symEntryData;
+                    SymFind->address = line_struct.line_type == ast_inst ? ic : dc;
+                }
+                else
+                {
+                    printf("%s: error in line %d redefination of symbol '%s'\n", amFileName, lineC, line_struct.labelName);
+                    errorFlag = 1;
+                }
+            }
+            else
+            {
+                // Todo - change it to dynamic data structure
+                strcpy(prog->symbol_table[prog->symCount].symName, line_struct.labelName);
+                prog->symbol_table[prog->symCount].symType = line_struct.line_type == ast_inst ? symCode : symData;
+                prog->symbol_table[prog->symCount].address = line_struct.line_type == ast_inst ? ic : dc;
+                prog->symCount++;
+            }
+        }
+        if (line_struct.line_type == ast_inst)
+        {
+            ic++;
+            if (line_struct.ast_options.inst.operands[0].addrs_mode == addrs_register && line_struct.ast_options.inst.operands[1].addrs_mode == addrs_register)
+            {
+                ic++;
+            }
+            else
+            {
+                ic += (line_struct.ast_options.inst.operands[0].addrs_mode >= data_number) + (line_struct.ast_options.inst.operands[1].addrs_mode >= data_number);
+            }
+        }
+        else if (line_struct.line_type == ast_dir && line_struct.ast_options.dir.dir_type >= ast_data)
+        {
+            memcpy(&prog->data_image[prog->DC], line_struct.ast_options.dir.dir_options.data, line_struct.ast_options.dir.dir_options.data->data_options.number * sizeof(int));
+            dc += line_struct.ast_options.dir.dir_options.data->data_options.number;
+            prog->DC = dc;
+        }
+        else if (line_struct.line_type == ast_dir && line_struct.ast_options.dir.dir_type <= ast_entry)
+        {
+            SymFind = symbolLookUp(prog->symbol_table, prog->symCount, line_struct.ast_options.dir.dir_options.label);
+            if (SymFind && line_struct.ast_options.dir.dir_type == ast_entry)
+            {
+                if (SymFind->symType == symCode)
+                {
+                    SymFind->symType = symEntryCode;
+                }
+                else if (SymFind->symType == symData)
+                {
+                    SymFind->symType = symEntryData;
+                }
+                else
+                {
+                    printf("%s: error in line %d redefination of symbol: '%s'\n", amFileName, lineC, line_struct.ast_options.dir.dir_options.label);
+                    errorFlag = 1;
+                }
+            }
+            else if (!SymFind)
+            {
+                strcpy(prog->symbol_table[prog->symCount].symName, line_struct.ast_options.dir.dir_options.label);
+                prog->symbol_table[prog->symCount].symType = line_struct.ast_options.dir.dir_type;
+                prog->symCount++;
+            }
+            else
+            {
+                printf("%s: error in line %d redefination of symbol: '%s'\n", amFileName, lineC, line_struct.ast_options.dir.dir_options.label);
+                errorFlag = 1;
+            }
+        }
+        lineC++;
     }
-
-
+    for (i = 0; i < prog->symCount; i++)
+    {
+        if (prog->symbol_table[1].symType == symEntry)
+        {
+            printf("%s: error symbol:'%s' declared entry but was never defined", amFileName, prog->symbol_table[i].symName);
+            errorFlag = 1;
+        }
+        if (prog->symbol_table[1].symType == symData || prog->symbol_table[1].symType == symEntryData)
+        {
+            prog->symbol_table[1].address += ic;
+        }
+        if (prog->symbol_table[1].symType >= symEntryCode)
+        {
+            prog->entries[prog->entries_count] = &prog->symbol_table[i];
+            prog->entries_count++;
+        }
+    }
+    return errorFlag;
 }
