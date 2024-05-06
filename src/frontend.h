@@ -96,6 +96,12 @@ struct ast {
                         } index_option;
                     } index;
                 }operand_options;
+                enum {
+                    none,
+                    num,
+                    label,
+                    reg
+                } operand_type;
                 /*operands = {source-operand, target-operand}*/
             } operands[2];
         } inst;
