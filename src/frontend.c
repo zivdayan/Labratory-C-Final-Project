@@ -324,15 +324,37 @@ static int parse_data_dir_operands(struct string_sep_result operands, struct ast
     
 }
 
-static void parse_inst_operand(char *operand, int operand_type, struct ast *ast, struct Instruction inst)
+static int parse_inst_operand(char *operand, int operand_type, struct ast *ast, struct Instruction inst)
 {
-    ast->ast_options.inst.operands[operand_type].addrs_mode;
+    /* Immediate addressing */
+    if("#" == operand[0] && operand_type==SRC_OPERAND)
+    {
+        operand++;        
+        ast->ast_options.inst.operands[operand_type].addrs_mode = addrs_immed;
 
-    ast->ast_options.inst.operands[operand_type].operand_options;
+        if(strchr(inst.source, IMMEDIATE_ADDRESSING) == NULL) 
+                return 1;
 
+        if(is_valid_label(operand))
+        {
+            ast->ast_options.inst.operands[operand_type].operand_type=label;
+            strcpy(ast->ast_options.inst.operands[operand_type].operand_options.label,operand);
+        }
 
-
+        if(is_number(operand, NULL, NULL))
+        {
+            ast->ast_options.inst.operands[operand_type].operand_type=num;
+            strcpy(ast->ast_options.inst.operands[operand_type].operand_options.immed,operand);   
+        }
+        
+    }
+        
 }
+
+
+
+
+
 
 
 static void parse_operands(struct string_sep_result operands, struct ast *ast_ptr)
@@ -358,8 +380,12 @@ static void parse_operands(struct string_sep_result operands, struct ast *ast_pt
             char *src_operand;
             char *target_operand;
             
+            ast.ast_options.inst.operands[0].operand_type = none;
+            ast.ast_options.inst.operands[1].operand_type = none;
 
-
+            ast.ast_options.inst.operands[0].addrs_mode = addrs_none;
+            ast.ast_options.inst.operands[1].addrs_mode = addrs_none;
+            
             switch(ast.ast_options.inst.inst_type)
             {
                 case inst_mov:
@@ -383,7 +409,8 @@ static void parse_operands(struct string_sep_result operands, struct ast *ast_pt
                 case inst_prn:
                 case inst_jsr:
                     strcpy(target_operand,operands.strings[0]);
-                    parse_inst_operand(target_operand,TARGET_OPERAND,ast_ptr,inst);    
+                    parse_inst_operand(target_operand,TARGET_OPERAND,ast_ptr,inst);
+                    ast.ast_options.inst.operands[1].operand_type = none;
                     break;
 
                 case inst_rts:
