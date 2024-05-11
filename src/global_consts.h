@@ -3,5 +3,3 @@
 #define WORD_LEN 12
 #define DIRECTIVES_LEN 4
 #define MAX_LINE_LENGTH 80
-#define SRC_OPERAND 0
-#define TARGET_OPERAND 1
