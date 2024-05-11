@@ -35,8 +35,7 @@ struct string_sep_result {
     int strings_count;
 };
 
-struct ast
-{
+struct ast {
     char lineError[SYNTAX_ERROR_LENGTH];
     char labelName[MAX_LABEL_LENGTH];
     /* Define all possible directives */ 
@@ -51,10 +50,8 @@ struct ast
             char label[MAX_LABEL_LENGTH];
             int number;
         } define;
-        struct
-        {
-            enum
-            {
+        struct {
+            enum {
                 ast_extern,
                 ast_entry,
                 ast_string,
@@ -66,10 +63,8 @@ struct ast
                 char string[MAX_LINE_LENGTH];
                 struct {
                     int data_length;
-                    struct
-                    {
-                        enum
-                        {
+                        struct {
+                        enum {
                             data_label,
                             data_number
                         } data_type;
@@ -84,32 +79,28 @@ struct ast
         } dir;
 
         /* Define all possible instructions */
-        struct
-        {
-            enum
-            {
-                inst_mov = 0,
-                inst_cmp = 1,
-                inst_add = 2,
-                inst_sub = 3,
-                inst_not = 4,
-                inst_clr = 5,
-                inst_lea = 6,
-                inst_inc = 7,
-                inst_dec = 8,
-                inst_jmp = 9,
-                inst_bne = 10,
-                inst_red = 11,
-                inst_prn = 12,
-                inst_jsr = 13,
-                inst_rts = 14,
-                inst_hlt = 15
+        struct {
+            enum {
+                inst_mov=0,
+                inst_cmp=1,
+                inst_add=2,
+                inst_sub=3,
+                inst_not=4,
+                inst_clr=5,
+                inst_lea=6,
+                inst_inc=7,
+                inst_dec=8,
+                inst_jmp=9,
+                inst_bne=10,
+                inst_red=11,
+                inst_prn=12,
+                inst_jsr=13,
+                inst_rts=14,
+                inst_hlt=15
             } inst_type;
 
-            struct
-            {
-                enum
-                {
+            struct {
+                enum {
                     addrs_none,
                     addrs_immed_const,
                     addrs_immed_label,
@@ -130,9 +121,8 @@ struct ast
                             char label[MAX_LABEL_LENGTH];
                         } index_option;
                     } index;
-                } operand_options;
-                enum
-                {
+                }operand_options;
+                enum {
                     none,
                     num,
                     label,
@@ -144,6 +134,7 @@ struct ast
             } operands[2];
         } inst;
     } ast_options;
+
 };
 
 struct ast *get_ast_from_line(char *line, struct Node *macro_list);
