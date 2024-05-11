@@ -20,7 +20,6 @@
  * @return Returns 0 on successful assembly.
  */
 
-
 void print_ob_file(const char *bname, const struct translation_unit *program);
 void print_ent_file(const char *bname, const struct translation_unit *program);
 void print_ext_file(const char *bname, const struct translation_unit *program);
@@ -47,32 +46,31 @@ int main(int argc, char *argv[])
 
         if (!preproc(current_file, output_macro_list))
             continue;
-        amFile= fopen(amFileName, "r");
-        
-        if(!firstPass(&program, amFileName, amFile, output_macro_list))
-        {
-            rewind(amFile);
-            if(!secondPass(&program, amFileName, amFile, output_macro_list))
-            {
-                print_ob_file(current_file, &program);
-                if(program.entries_count >=1)
-                    print_ent_file(current_file, &program);
-
-                if(program.extCount >=1)
-                    print_ext_file(current_file, &program);
-            }
-        }
-
 
         printf("Preprocessor done, file name: %s \n", amFileName);
+
+        amFile = fopen(amFileName, "r");
 
         printf("Starting first pass - %s \n", current_file);
 
         /* -- Execute First pass -- */
 
-        printf("Starting second pass - %s \n", current_file);
+        if (!firstPass(&program, amFileName, amFile, output_macro_list))
+        {
+            rewind(amFile);
+            printf("Starting second pass - %s \n", current_file);
 
-        /* -- Execute First pass -- */
+            /* -- Execute Second pass -- */
+            if (!secondPass(&program, amFileName, amFile, output_macro_list))
+            {
+                print_ob_file(current_file, &program);
+                if (program.entries_count >= 1)
+                    print_ent_file(current_file, &program);
+
+                if (program.extCount >= 1)
+                    print_ext_file(current_file, &program);
+            }
+        }
     }
     printf("end\n");
     return 0;

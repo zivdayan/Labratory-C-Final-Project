@@ -32,27 +32,24 @@ static void get_macro_list(struct Macro *macroTable, int macro_count, struct Nod
 {
     struct Node *curr_node;
     struct Node *next_node;
-    int i=0;
+    int i = 0;
 
-    if(!macro_count)
+    if (!macro_count)
         return;
 
     curr_node = malloc(sizeof(struct Node));
-    curr_node->value=macroTable[i++].macroName;
+    curr_node->value = macroTable[i++].macroName;
 
     output_macro_list = curr_node;
-    
-    while(i < macro_count)
+
+    while (i < macro_count)
     {
         next_node = malloc(sizeof(struct Node));
-        next_node->value=macroTable[i++].macroName;
+        next_node->value = macroTable[i++].macroName;
 
-        curr_node->next=next_node;
-        curr_node=next_node;
+        curr_node->next = next_node;
+        curr_node = next_node;
     }
-
-    
-    
 }
 
 int macro_line(char *s, struct Macro **macro, struct Macro *macro_table, int *table_size)
@@ -119,6 +116,8 @@ char *preproc(char *bname, struct Node *output_macro_list)
     char *asFileName = strcatWithMalloc(bname, as_file_ext);
     char *amFileName = strcatWithMalloc(bname, am_file_ext);
 
+    int i, j;
+
     as_file = fopen(asFileName, "r");
     am_file = fopen(amFileName, "w");
 
@@ -138,7 +137,7 @@ char *preproc(char *bname, struct Node *output_macro_list)
         case 1:
             break;
         case 2:
-            for (int i = 0; i < macro->lineCounter; i++)
+            for (i = 0; i < macro->lineCounter; i++)
             {
                 fputs(macro->macroLines[i], am_file);
             }
@@ -168,9 +167,9 @@ char *preproc(char *bname, struct Node *output_macro_list)
 
     get_macro_list(macro_table, macro_count, output_macro_list);
 
-    for (int i = 0; i < macro_count; i++)
+    for (i = 0; i < macro_count; i++)
     {
-        for (int j = 0; j < macro_table[i].lineCounter; j++)
+        for (j = 0; j < macro_table[i].lineCounter; j++)
         {
             free(macro_table[i].macroLines[j]);
         }
