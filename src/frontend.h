@@ -4,8 +4,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include "structs.h"
+#include <limits.h>
+#include <stdio.h>
 
+#define SPACES " \t\v\f"
 
+#define ERROR_CODE_44 44
+#define MAX_LABEL_LENGTH 31
 #define IMMEDIATE_ADDRESSING '0'
 #define DIRECT_ADDRESSING '1'
 #define INDEX_ADDRESSING '2'
@@ -15,6 +20,16 @@
 #define TARGET_OPERAND 1
 #define TARGET_SINGLE_OPERAND 2
 
+#define DEFAULT_INT INT_MAX
+
+struct Instruction
+{
+    char *name;
+    int opcode;
+    const char *source;
+    const char *dest;
+};
+
 struct string_sep_result {
     char *strings[80];
     int strings_count;
@@ -22,7 +37,7 @@ struct string_sep_result {
 
 struct ast {
     char lineError[SYNTAX_ERROR_LENGTH];
-    const char * labelName;
+    char labelName[MAX_LABEL_LENGTH];
     /* Define all possible directives */ 
     enum {
         ast_inst,
@@ -32,7 +47,7 @@ struct ast {
     } line_type;
     union {
         struct {
-            const char *label;
+            char *label;
             int number;
         } define;
         struct {
@@ -87,22 +102,23 @@ struct ast {
             struct {
                 enum {
                     addrs_none,
-                    addrs_immed,
+                    addrs_immed_const,
+                    addrs_immed_label,
                     addrs_label,
                     adddrs_index_const,
                     adddrs_index_label,
                     addrs_register
                 } addrs_mode;
                 union {
-                    int *immed;
+                    int immed;
                     char *label;
                     int reg;
                     /* Define the index addressing case - Example: mov x[2], r2 */ 
                     struct {
-                        char * label;
+                        char label[MAX_LABEL_LENGTH];
                         union {
                             int number;
-                            char * label;
+                            char label[MAX_LABEL_LENGTH];
                         } index_option;
                     } index;
                 }operand_options;
@@ -121,9 +137,13 @@ struct ast {
 };
 
 struct ast *get_ast_from_line(char *line, struct Node *macro_list);
-
-int is_keyword(char *str, char *collection[], int length);
+static int line_contains_label_decleration(struct string_sep_result *ssr);
+static int is_keyword(char *str, char *collection[], int length);
 static int is_number(char *str, int max, int min);
 static int is_instruction_line(struct string_sep_result ssr);
 static int is_dir_line(struct string_sep_result ssr);
+void string_sep(char *original_str, struct string_sep_result *ssr);
 static int parse_inst_operand(char *operand, int operand_type, struct ast *ast, struct Instruction inst);
+static int is_valid_label(char *str);
+static char *remove_last_char(char *str);
+static struct string_sep_result *strip_first_element(struct string_sep_result *ssr);
