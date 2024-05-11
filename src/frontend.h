@@ -47,7 +47,7 @@ struct ast {
     } line_type;
     union {
         struct {
-            char *label;
+            char label[MAX_LABEL_LENGTH];
             int number;
         } define;
         struct {
@@ -59,8 +59,8 @@ struct ast {
             } dir_type;
 
             union {
-                char * label;
-                char * string;
+                char label[MAX_LABEL_LENGTH];
+                char string[MAX_LINE_LENGTH];
                 struct {
                     int data_length;
                         struct {
@@ -69,7 +69,7 @@ struct ast {
                             data_number
                         } data_type;
                         union {
-                            char *label;
+                            char label[MAX_LABEL_LENGTH];
                             int number;
                         } data_value;
                     } data[80];
@@ -111,7 +111,7 @@ struct ast {
                 } addrs_mode;
                 union {
                     int immed;
-                    char *label;
+                    char label[MAX_LABEL_LENGTH];
                     int reg;
                     /* Define the index addressing case - Example: mov x[2], r2 */ 
                     struct {
@@ -130,6 +130,7 @@ struct ast {
                     index
                 } operand_type;
                 /*operands = {source-operand, target-operand}*/
+                /*operands = {target-operand, NONE}*/
             } operands[2];
         } inst;
     } ast_options;

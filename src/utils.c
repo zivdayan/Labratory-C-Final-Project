@@ -7,9 +7,11 @@ void char_sanitize(char **original_str, char c)
     char newstr[MAX_LINE_LENGTH+1];
     int i, j;
 
+    newstr[0]='\0';
+
     i = 0;
     j = 0;
-    for (i = 0; str[i] != '\0'; i++) {
+    for (i = 0; i < strlen(*original_str); i++) {
         if (str[i] == c) {
             newstr[j++] = ' ';  /* Add a space before the comma */ 
             newstr[j++] = c;  /* Add a comma */ 
@@ -17,11 +19,12 @@ void char_sanitize(char **original_str, char c)
         }
         else
         {
-            newstr[j++] = str[i];
+            *(newstr + j) = *(str + i);
+            j++;
         }
     }
     newstr[j] = '\0';  /* Null-terminate the new string */ 
 
-    *original_str=newstr;
+    strcpy(*original_str,newstr);
 }
 
