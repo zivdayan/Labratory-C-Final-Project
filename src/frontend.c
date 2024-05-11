@@ -177,6 +177,43 @@ int is_keyword(char *str, char *collection[], int length)
     return 0;
 }
 
+int split_label_and_index(char *operand, char** label, int* index, char** label_index) {
+    
+    char *index_start=strpbrk(operand,"[");
+    char *index_end=strpbrk(operand,"]");
+
+    if(index_start == NULL || index_end == NULL)
+        return 0;
+    
+    if(*(index_end+1) != '\0')
+        return 0;
+    
+    *(index_end) = '\0';
+
+    int is_index_number = is_number(index_start+1, NULL, NULL);
+    int is_index_label = is_label(index_start+1, NULL, NULL);
+    if(!(is_index_label ^ is_index_number))
+        return 0;
+    
+    if(is_index_number)
+    {
+        *index = atoi((index_start+1));
+    }
+    else
+    {
+        if(is_index_label)
+            strcpy(label_index, index_start);
+    }
+
+    *index_start = '\0';
+    if(!is_valid_label(operand))
+        return 0;
+            
+    strcpy(label,operand);
+    return 0;
+    
+}
+
 static int is_valid_label_string(char *str)
 {
     if (strlen(str) > MAX_LABEL_LENGTH)
@@ -324,38 +361,108 @@ static int parse_data_dir_operands(struct string_sep_result operands, struct ast
     
 }
 
+static int check_operand_addressing_mode(int operand_type, struct Instruction inst, int addressing_mode)
+{
+    if(operand_type == SRC_OPERAND)
+    {
+        if(strchr(inst.source, addressing_mode) == NULL) 
+            return 0;
+    }
+    if(operand_type == TARGET_OPERAND)
+    {
+        if(strchr(inst.dest, addressing_mode) == NULL) 
+            return 0;
+    }
+    if(operand_type == TARGET_SINGLE_OPERAND)
+    {
+        if(strchr(inst.dest, addressing_mode) == NULL) 
+            return 0;
+    }
+
+    return 1;
+}
+
 static int parse_inst_operand(char *operand, int operand_type, struct ast *ast, struct Instruction inst)
 {
-    /* Immediate addressing */
-    if("#" == operand[0] && operand_type==SRC_OPERAND)
-    {
-        operand++;        
-        ast->ast_options.inst.operands[operand_type].addrs_mode = addrs_immed;
+    int *number_index;
+    char *label_index;
+    char *index_label;
+    char *immediate_operand;
 
-        if(strchr(inst.source, IMMEDIATE_ADDRESSING) == NULL) 
-                return 1;
+    int addrs_mode = ast->ast_options.inst.operands[operand_type].addrs_mode;
+    
+    /* Direct register addressing */
+    if (is_keyword(operand, REGISTERS, REG_LEN))
+    {
+        if(!check_operand_addressing_mode(operand_type,inst, REGISTER_ADDRESSING))
+            return 0;
+
+        ast->ast_options.inst.operands[operand_type].operand_type=reg;
+        ast->ast_options.inst.operands[operand_type].operand_options.reg = atoi((operand+1));
+        return 1;
+    }
+
+    /* Immediate addressing */
+    if("#" == operand[0])
+    {
+        immediate_operand = operand + 1;      /* Remove prefix hashtag */  
+        
+        if(!check_operand_addressing_mode(operand_type,inst, IMMEDIATE_ADDRESSING))
+            return 0;
+            
+
+        ast->ast_options.inst.operands[operand_type].addrs_mode = addrs_immed;
 
         if(is_valid_label(operand))
         {
             ast->ast_options.inst.operands[operand_type].operand_type=label;
             strcpy(ast->ast_options.inst.operands[operand_type].operand_options.label,operand);
+            return 1;
         }
 
         if(is_number(operand, NULL, NULL))
         {
             ast->ast_options.inst.operands[operand_type].operand_type=num;
             strcpy(ast->ast_options.inst.operands[operand_type].operand_options.immed,operand);   
+            return 1;
         }
         
     }
+
+
+    /* Index addressing */
+    if(split_label_and_index(operand, &index_label, &number_index, &label_index))
+    {
+        if(!check_operand_addressing_mode(operand_type,inst, INDEX_ADDRESSING))
+            return 0;
+            
+
+        ast->ast_options.inst.operands[operand_type].operand_type=index;
+
+        if(number_index != NULL)
+            ast->ast_options.inst.operands[operand_type].operand_options.index.index_option.number = *number_index;
+
+        if(label_index != NULL)
+            strcpy(ast->ast_options.inst.operands[operand_type].operand_options.index.index_option.label, label_index);
+
+        strcpy(ast->ast_options.inst.operands[operand_type].operand_options.index.label,index_label);
         
+    }
+
+    /* Direct addressing */
+    if(is_valid_label(operand))
+    {
+        if(!check_operand_addressing_mode(operand_type,inst, DIRECT_ADDRESSING))
+            return 0;
+            
+
+        ast->ast_options.inst.operands[operand_type].operand_type=label;
+        strcpy(ast->ast_options.inst.operands[operand_type].operand_options.label,operand);   
+        return 1;
+    }
+
+    return 0;
 }
-
-
-
-
-
-
 
 static void parse_operands(struct string_sep_result operands, struct ast *ast_ptr)
 {
@@ -409,7 +516,7 @@ static void parse_operands(struct string_sep_result operands, struct ast *ast_pt
                 case inst_prn:
                 case inst_jsr:
                     strcpy(target_operand,operands.strings[0]);
-                    parse_inst_operand(target_operand,TARGET_OPERAND,ast_ptr,inst);
+                    parse_inst_operand(target_operand,TARGET_SINGLE_OPERAND,ast_ptr,inst);
                     ast.ast_options.inst.operands[1].operand_type = none;
                     break;
 
@@ -588,6 +695,8 @@ struct ast *get_ast_from_line(char *line, struct Node *macro_list)
         ssr = strip_first_element(ssr); /* Truncated the "LABEL:" */
         operands = strip_first_element(ssr);
         label_declared=1;
+
+        /* TODO: Warning if label is declared and this is .entry */
     }
 
     if(is_define_line(ssr))

@@ -11,6 +11,10 @@
 #define INDEX_ADDRESSING '2'
 #define REGISTER_ADDRESSING '3'
 
+#define SRC_OPERAND 0
+#define TARGET_OPERAND 1
+#define TARGET_SINGLE_OPERAND 2
+
 struct string_sep_result {
     char *strings[80];
     int strings_count;
@@ -106,7 +110,8 @@ struct ast {
                     none,
                     num,
                     label,
-                    reg
+                    reg,
+                    index
                 } operand_type;
                 /*operands = {source-operand, target-operand}*/
             } operands[2];

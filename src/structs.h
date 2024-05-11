@@ -1,6 +1,9 @@
 #define MAX_MEM_SIZE 80
 #define MAX_SYMBOLS 80
 
+#ifndef DEFINED_STRUCTS_H
+#define DEFINED_STRUCTS_H
+
 struct symbol{
     char symName[32];
     enum {
@@ -40,3 +43,5 @@ struct Node
   char * value;
   struct Node *next;
 };
+
+#endif
