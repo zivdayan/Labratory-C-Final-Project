@@ -55,13 +55,13 @@ int firstPass(struct translation_unit *prog, const char *amFileName, FILE *amFil
         if (line_struct.line_type == ast_inst)
         {
             ic++;
-            if (line_struct.ast_options.inst.operands[0].addrs_mode == addrs_register && line_struct.ast_options.inst.operands[1].addrs_mode == addrs_register)
+            if (line_struct.ast_options.inst.operands[0].operand_type == reg && line_struct.ast_options.inst.operands[1].operand_type == reg)
             {
                 ic++;
             }
             else
             {
-                ic += (line_struct.ast_options.inst.operands[0].addrs_mode >= addrs_immed) + (line_struct.ast_options.inst.operands[1].addrs_mode >= addrs_immed);
+                ic += (line_struct.ast_options.inst.operands[0].operand_type >= num) + (line_struct.ast_options.inst.operands[1].operand_type >= num);
             }
         }
         else if (line_struct.line_type == ast_dir && line_struct.ast_options.dir.dir_type >= ast_data)

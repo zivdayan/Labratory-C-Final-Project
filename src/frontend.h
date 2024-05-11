@@ -5,6 +5,11 @@
 #include <string.h>
 #include "structs.h"
 
+#define IMMEDIATE_ADDRESSING '0'
+#define DIRECT_ADDRESSING '1'
+#define INDEX_ADDRESSING '2'
+#define REGISTER_ADDRESSING '3'
+
 struct string_sep_result
 {
     char *strings[80];
@@ -92,6 +97,7 @@ struct ast
             {
                 enum
                 {
+                    addrs_none,
                     addrs_immed,
                     addrs_label,
                     adddrs_index_const,
@@ -114,6 +120,13 @@ struct ast
                         } index_option;
                     } index;
                 } operand_options;
+                enum
+                {
+                    none,
+                    num,
+                    label,
+                    reg
+                } operand_type;
                 /*operands = {source-operand, target-operand}*/
             } operands[2];
         } inst;
@@ -126,4 +139,4 @@ int is_keyword(char *str, char *collection[], int length);
 static int is_number(char *str, int max, int min);
 static int is_instruction_line(struct string_sep_result ssr);
 static int is_dir_line(struct string_sep_result ssr);
-static void parse_inst_operand(char *operand, int operand_type, struct ast *ast, struct inst *inst);
+static int parse_inst_operand(char *operand, int operand_type, struct ast *ast, struct Instruction inst);

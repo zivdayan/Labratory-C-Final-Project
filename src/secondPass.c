@@ -19,11 +19,11 @@ int secondPass(struct translation_unit *prog, const char *amFileName, FILE *amFi
         line_struct = *get_ast_from_line(line, macro_list);
         if (line_struct.line_type == ast_inst)
         {
-            prog->code_image[prog->IC] = line_struct.ast_options.inst.operands[0].addrs_mode << 9;
-            prog->code_image[prog->IC] |= line_struct.ast_options.inst.operands[1].addrs_mode << 2;
+            prog->code_image[prog->IC] = line_struct.ast_options.inst.operands[0].operand_type << 9;
+            prog->code_image[prog->IC] |= line_struct.ast_options.inst.operands[1].operand_type << 2;
             prog->code_image[prog->IC] |= line_struct.ast_options.inst.inst_type >> 5;
             prog->IC;
-            if (line_struct.ast_options.inst.operands[0].addrs_mode == addrs_register && line_struct.ast_options.inst.operands[1].addrs_mode == addrs_register)
+            if (line_struct.ast_options.inst.operands[0].operand_type == reg && line_struct.ast_options.inst.operands[1].operand_type == reg)
             {
                 prog->code_image[prog->IC] = line_struct.ast_options.inst.operands[0].operand_options.reg << 7;
                 prog->code_image[prog->IC] |= line_struct.ast_options.inst.operands[1].operand_options.reg << 2;
@@ -33,11 +33,11 @@ int secondPass(struct translation_unit *prog, const char *amFileName, FILE *amFi
             {
                 for (i = 0; i < 2; i++)
                 {
-                    if (line_struct.ast_options.inst.operands[i].addrs_mode == addrs_register)
+                    if (line_struct.ast_options.inst.operands[i].operand_type == reg)
                     {
                         prog->code_image[prog->IC] = line_struct.ast_options.inst.operands[i].operand_options.reg << 7 - (i * 5);
                     }
-                    else if (line_struct.ast_options.inst.operands[i].addrs_mode == addrs_label)
+                    else if (line_struct.ast_options.inst.operands[i].operand_type == label)
                     {
                         SymFind = symbolLookUp(prog->symbol_table, prog->symCount, line_struct.ast_options.inst.operands[i].operand_options.label);
                         if (SymFind)
@@ -71,11 +71,11 @@ int secondPass(struct translation_unit *prog, const char *amFileName, FILE *amFi
                             errorFlag = 1;
                         }
                     }
-                    else if (line_struct.ast_options.inst.operands[i].addrs_mode == addrs_immed)
+                    else if (line_struct.ast_options.inst.operands[i].operand_type == num)
                     {
-                        prog->code_image[prog->IC] = line_struct.ast_options.inst.operands[i].operand_options.immed;
+                        prog->code_image[prog->IC] = line_struct.ast_options.inst.operands[i].operand_options.immed << 2;
                     }
-                    if (line_struct.ast_options.inst.operands[i].addrs_mode != NULL) // Todo: check if NULL or none
+                    if (line_struct.ast_options.inst.operands[i].operand_type != none)
                     {
                         prog->IC++;
                     }
