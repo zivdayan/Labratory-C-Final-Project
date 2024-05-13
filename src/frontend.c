@@ -33,11 +33,6 @@ struct Directive directives[] = {
 
 char *INSTRUCTIONS[] = {"mov", "cmp", "add", "sub", "not", "clr", "lea", "inc", "dec", "jmp", "bne", "red", "prn", "jsr", "rts", "hlt"};
 
-int syntax_error_line_too_long(char *file_name)
-{
-    return 0;
-}
-
 struct Instruction inst_table[16] = {
     {"mov", 0, "0123", "123"},
     {"cmp", 1, "0123", "0123"},
@@ -492,7 +487,7 @@ static int parse_inst_operand(char *operand, int operand_type, struct ast *ast, 
     return 0;
 }
 
-static void parse_operands(struct string_sep_result operands, struct ast *ast_ptr)
+static int parse_operands(struct string_sep_result operands, struct ast *ast_ptr)
 {
     struct Instruction inst;
     char src_operand[MAX_LINE_LENGTH];
@@ -509,6 +504,7 @@ static void parse_operands(struct string_sep_result operands, struct ast *ast_pt
                     break;
 
                 default:
+                    return 0;
                     break;
             }
             break;
@@ -529,12 +525,20 @@ static void parse_operands(struct string_sep_result operands, struct ast *ast_pt
                 case inst_add:
                 case inst_sub:
                 case inst_lea:
+                    if(operands.strings_count == 3)
+                    {
+                        strcpy(src_operand,operands.strings[0]);
+                        strcpy(target_operand,operands.strings[2]);
+                        parse_inst_operand(src_operand,SRC_OPERAND,ast_ptr,inst);
+                        parse_inst_operand(target_operand,TARGET_OPERAND,ast_ptr,inst);
+                        break;
+                    }
+                    else
+                    {
+                        strcpy(ast_ptr->lineError,SYNTAX_ERROR_INVALID_NUMBER_OPERANDS);
+                        return 0;   
+                    }
 
-                    strcpy(src_operand,operands.strings[0]);
-                    strcpy(target_operand,operands.strings[2]);
-                    parse_inst_operand(src_operand,SRC_OPERAND,ast_ptr,inst);
-                    parse_inst_operand(target_operand,TARGET_OPERAND,ast_ptr,inst);
-                    break;
                 
                 case inst_not:
                 case inst_clr:
@@ -545,13 +549,27 @@ static void parse_operands(struct string_sep_result operands, struct ast *ast_pt
                 case inst_red:
                 case inst_prn:
                 case inst_jsr:
-                    strcpy(target_operand,operands.strings[0]);
-                    parse_inst_operand(target_operand,TARGET_SINGLE_OPERAND,ast_ptr,inst);
-                    ast_ptr->ast_options.inst.operands[1].operand_type=none;
-                    break;
+                    if(operands.strings_count == 1)
+                    {
+                        strcpy(target_operand,operands.strings[0]);
+                        parse_inst_operand(target_operand,TARGET_SINGLE_OPERAND,ast_ptr,inst);
+                        ast_ptr->ast_options.inst.operands[1].operand_type=none;
+                        break;
+                    }
+                    else
+                    {
+                        strcpy(ast_ptr->lineError,SYNTAX_ERROR_INVALID_NUMBER_OPERANDS);
+                        return 0;   
+                    }
+
 
                 case inst_rts:
                 case inst_hlt:
+                    if(operands.strings_count!=0)
+                    {
+                        strcpy(ast_ptr->lineError,SYNTAX_ERROR_INVALID_NUMBER_OPERANDS);
+                        return 0;   
+                    }
                     break;
             }
             break;
@@ -563,6 +581,8 @@ static void parse_operands(struct string_sep_result operands, struct ast *ast_pt
         default:    
             break;
     }
+
+    return 1;
 }
 
 static int is_valid_line(char *line)
@@ -710,11 +730,9 @@ struct ast *get_ast_from_line(char *line, struct Node *macro_list)
     struct string_sep_result ssr;
     struct string_sep_result operands;
 
-    int error_code;
+    int error_occured;
     struct ast *ast_ptr = {0};
     int label_declared;
-
-    error_code=-1;
 
     ssr_ptr = malloc(sizeof(struct string_sep_result));
     operands_ptr = malloc(sizeof(struct string_sep_result));
@@ -726,11 +744,20 @@ struct ast *get_ast_from_line(char *line, struct Node *macro_list)
     ast_ptr = malloc(sizeof(struct ast));
     label_declared=0;
 
+
+    error_occured=0;
+    strcpy(ast_ptr->lineError,"");
+
     if (*line == '\n' || *line == ';')
         return ast_ptr;
 
     if(!is_valid_line(line))
+    {
+        strcpy(ast_ptr->lineError,SYNTAX_ERROR_LINE_TOO_LONG);
+        error_occured = 1;
         goto invalid_syntax;
+    }
+        
 
     line[strcspn(line, "\r\n")] = 0; /* Mark end of line */
 
@@ -742,13 +769,9 @@ struct ast *get_ast_from_line(char *line, struct Node *macro_list)
     char_sanitize(&line, ',');
     char_sanitize(&line, '=');
 
-    strcpy(original_line,line);
-
-    
+    strcpy(original_line,line);  
 
     string_sep(line, &ssr);
-    error_code = 0;
-    printf("%d", error_code);
 
     if (line_contains_label_decleration(&ssr))
     {
@@ -767,12 +790,26 @@ struct ast *get_ast_from_line(char *line, struct Node *macro_list)
     if(is_define_line(ssr))
     {
         if(label_declared)
+        {
+            error_occured=1;
             goto invalid_syntax;
+        }
+            
         ast_ptr->line_type = ast_define;
         if(check_define_validity(operands))
-            parse_operands(operands,ast_ptr);
+        {
+            if(!parse_operands(operands,ast_ptr))
+            {
+                error_occured=1;
+                goto invalid_syntax;
+            }
+        }
         else
+        {
+            error_occured=1;
             goto invalid_syntax;
+        }
+            
     }
 
     if(is_instruction_line(ssr))
@@ -782,9 +819,18 @@ struct ast *get_ast_from_line(char *line, struct Node *macro_list)
         ast_ptr->line_type = ast_inst;
         ast_ptr->ast_options.inst.inst_type=inst_type_obj.opcode;
         if(check_inst_commas_validity(operands))
-            parse_operands(operands,ast_ptr);
+        {
+            if(!parse_operands(operands,ast_ptr))
+            {
+                error_occured=1;
+                goto invalid_syntax;
+            }
+        }
         else
+        {
+            error_occured=1;
             goto invalid_syntax;
+        }
     }
 
     if (is_dir_line(ssr))
@@ -797,9 +843,19 @@ struct ast *get_ast_from_line(char *line, struct Node *macro_list)
             ast_ptr->line_type = ast_dir;
             ast_ptr->ast_options.dir.dir_type = ast_data;
             if (check_data_commas_validity(operands))
-                parse_operands(operands, ast_ptr);
+            {
+                if(!parse_operands(operands,ast_ptr))
+                {
+                    error_occured=1;
+                    goto invalid_syntax;
+                }
+            }
             else
+            {
+                error_occured=1;
                 goto invalid_syntax;
+            }
+                
             break;
 
         case DIR_STRING:
@@ -814,6 +870,7 @@ struct ast *get_ast_from_line(char *line, struct Node *macro_list)
             
             else
             {
+                error_occured=1;
                 goto invalid_syntax;
             }
                 
@@ -837,20 +894,25 @@ struct ast *get_ast_from_line(char *line, struct Node *macro_list)
                 }
             }
             else
+            {
+                error_occured=1;
                 goto invalid_syntax;
+            }
 
             break;
         default:
+            error_occured=1;
             goto invalid_syntax;
             break;
         }
 
-    invalid_syntax:
-        printf("%s", "");
+
 
     }
 
-    
+    invalid_syntax:
+        if(error_occured)
+            printf("Error has occured at: %s! \n %s \n\n", line , ast_ptr->lineError);
 
     return ast_ptr;
 }
@@ -917,7 +979,7 @@ static struct string_sep_result *strip_first_element(struct string_sep_result *s
 
 /* FOR DEBUGGING : */
 
-/*
+
 int main()
 {
     FILE *amFile;
@@ -926,14 +988,14 @@ int main()
     struct Node macro_list = {0};
     struct ast *a;
 
-    line = malloc((MAX_LINE_LENGTH + 1) * sizeof(char));
-    printf("%s", "shit");
-    amFile= fopen("ps.as", "r");
+    /* Taking a buffer of 1 char within overflow of a line */
+    line = malloc((MAX_LINE_LENGTH + 2) * sizeof(char));
+    amFile= fopen("test.as", "r");
     
     
     a = malloc(sizeof(struct ast));
 
-    while(fgets(line, MAX_LINE_LENGTH, amFile))
+    while(fgets(line, MAX_LINE_LENGTH + 2, amFile))
     {
         a = get_ast_from_line(line, &macro_list);
     }
@@ -943,4 +1005,3 @@ int main()
 
     return 0;
 }
-*/
