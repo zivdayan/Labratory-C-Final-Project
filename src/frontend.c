@@ -952,30 +952,3 @@ static struct string_sep_result *strip_first_element(struct string_sep_result *s
 
     return stripped_ssr;
 }
-
-/* FOR DEBUGGING : */
-
-int main()
-{
-    FILE *amFile;
-    char *line;
-
-    struct Node macro_list = {0};
-    struct ast *a;
-
-    /* Taking a buffer of 1 char within overflow of a line */
-    line = malloc((MAX_LINE_LENGTH + 2) * sizeof(char));
-    amFile = fopen("test.as", "r");
-
-    a = malloc(sizeof(struct ast));
-
-    while (fgets(line, MAX_LINE_LENGTH + 2, amFile))
-    {
-        a = get_ast_from_line(line, &macro_list);
-    }
-
-    free(a);
-    free(line);
-
-    return 0;
-}
