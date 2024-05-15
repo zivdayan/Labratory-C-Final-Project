@@ -17,4 +17,4 @@
         }                                           \
     } while (0)
 
-char *preproc(char *bname, struct Node *output_macro_list);
+char *preproc(char *bname, struct Node **output_macro_list);
