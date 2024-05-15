@@ -1,7 +1,9 @@
  GLOBAL_DEPS = global_consts.h
+ COMPILE_DEPS = assembler.o frontend.o preprocessor.o firstPass.o secondPass.o utils.o
 
-assembler: assembler.o preprocessor.o $(GLOBAL_DEPS)
-	gcc -g -Wall -ansi -pedantic assembler.o preprocessor.o -o assembler
+
+assembler: $(COMPILE_DEPS) $(GLOBAL_DEPS) 
+	gcc -g -Wall -ansi -pedantic $(COMPILE_DEPS) $(GLOBAL_DEPS)  -o assembler
 
 frontend: frontend.o utils.o $(GLOBAL_DEPS)
 	gcc -g -Wall -ansi -pedantic frontend.o utils.o -o frontend
@@ -12,6 +14,9 @@ assembler.o: assembler.c preprocessor.h $(GLOBAL_DEPS)
 preprocessor.o: preprocessor.c preprocessor.h $(GLOBAL_DEPS)
 	gcc -g -c -Wall -ansi -pedantic preprocessor.c -o preprocessor.o
 
+frontend.o: frontend.c frontend.h $(GLOBAL_DEPS)
+	gcc -g -c -Wall -ansi -pedantic frontend.c -o frontend.o
+
 firstPass.o: firstPass.c firstPass.h $(GLOBAL_DEPS)
 	gcc -g -c -Wall -ansi -pedantic firstPass.c -o firstPass.o
 
@@ -21,5 +26,5 @@ secondPass.o: secondPass.c secondPass.h $(GLOBAL_DEPS)
 utils.o: utils.c utils.h $(GLOBAL_DEPS)
 	gcc -g -c -Wall -ansi -pedantic utils.c -o utils.o
 
-frontend.o: frontend.c frontend.h $(GLOBAL_DEPS)
-	gcc -g -c -Wall -ansi -pedantic frontend.c -o frontend.o
+clean:
+	rm -rf *.o *.am *.ob *.ent *.ext
