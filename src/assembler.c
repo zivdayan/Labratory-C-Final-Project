@@ -36,13 +36,12 @@ int main(int argc, char *argv[])
     }
     for (pargv = argv + 1; *pargv != argv[argc]; pargv++)
     {
-        char *amFileName;
+        char *amFileName = "";
         FILE *amFile;
         char *current_file = *pargv;
+        struct Node **output_macro_list = NULL;
 
         printf("Starting preprocessor - %s \n", current_file);
-
-        struct Node **output_macro_list;
 
         if (!preproc(current_file, output_macro_list))
             continue;

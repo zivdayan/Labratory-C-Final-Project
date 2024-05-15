@@ -18,7 +18,8 @@ struct Macro
 
 struct Macro *searchMacro(struct Macro *macroTable, const int tableSize, const char *name)
 {
-    for (int i = 0; i < tableSize; i++)
+    int i;
+    for (i = 0; i < tableSize; i++)
     {
         if (strcmp(macroTable[i].macroName, name) == 0)
         {
@@ -28,7 +29,7 @@ struct Macro *searchMacro(struct Macro *macroTable, const int tableSize, const c
     return NULL;
 }
 
-static void get_macro_list(struct Macro *macroTable, int macro_count, struct Node *output_macro_list)
+static void get_macro_list(struct Macro *macroTable, int macro_count, struct Node **output_macro_list)
 {
     struct Node *curr_node;
     struct Node *next_node;
@@ -40,7 +41,7 @@ static void get_macro_list(struct Macro *macroTable, int macro_count, struct Nod
     curr_node = malloc(sizeof(struct Node));
     curr_node->value = macroTable[i++].macroName;
 
-    output_macro_list = curr_node;
+    *output_macro_list = curr_node;
 
     while (i < macro_count)
     {
@@ -56,6 +57,10 @@ int macro_line(char *s, struct Macro **macro, struct Macro *macro_table, int *ta
 {
     char *item1 = NULL;
     char *item2 = NULL;
+    struct Macro newMacro;
+    char *c2;
+    struct Macro *f;
+
     SPLIT_BY_FIRST_SPACE(s, item1, item2);
 
     if (strstr(item1, "endmcr"))
@@ -70,7 +75,7 @@ int macro_line(char *s, struct Macro **macro, struct Macro *macro_table, int *ta
         if (c2)
             *c2 = '\0';
 
-        struct Macro newMacro;
+        
         strncpy(newMacro.macroName, item2, MAX_MACRO_LEN);
         newMacro.lineCounter = 0;
         newMacro.macroLines = malloc(10 * sizeof(char *));
@@ -80,10 +85,10 @@ int macro_line(char *s, struct Macro **macro, struct Macro *macro_table, int *ta
         return 1;
     }
 
-    char *c2 = strpbrk(item2, SPACES);
+    c2 = strpbrk(item2, SPACES);
     if (c2)
         *c2 = '\0';
-    struct Macro *f = searchMacro(macro_table, *table_size, item2);
+    f = searchMacro(macro_table, *table_size, item2);
 
     if (f)
     {
@@ -105,7 +110,7 @@ char *strcatWithMalloc(const char *s1, const char *s2)
     return result;
 }
 
-char *preproc(char *bname, struct Node *output_macro_list)
+char *preproc(char *bname, struct Node **output_macro_list)
 {
     char line[MAX_LINE_LEN] = {0};
     struct Macro *macro_table = malloc(10 * sizeof(struct Macro));
