@@ -6,6 +6,8 @@
 #include "structs.h"
 #include <limits.h>
 #include <stdio.h>
+#include "error_msg.h"
+
 
 #define SPACES " \t\v\f"
 

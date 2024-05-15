@@ -1,7 +1,10 @@
- GLOBAL_DEPS = glocal_consts.h
+ GLOBAL_DEPS = global_consts.h
 
 assembler: assembler.o preprocessor.o $(GLOBAL_DEPS)
 	gcc -g -Wall -ansi -pedantic assembler.o preprocessor.o -o assembler
+
+frontend: frontend.o utils.o $(GLOBAL_DEPS)
+	gcc -g -Wall -ansi -pedantic frontend.o utils.o -o frontend
 
 assembler.o: assembler.c preprocessor.h $(GLOBAL_DEPS)
 	gcc -g -c -Wall -ansi -pedantic assembler.c -o assembler.o
