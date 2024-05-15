@@ -444,7 +444,7 @@ static int parse_inst_operand(char *operand, int operand_type, struct ast *ast, 
             return 0;
             
 
-        ast->ast_options.inst.operands[operand_type_index].operand_type=index;
+        ast->ast_options.inst.operands[operand_type_index].operand_type=index_operand;
 
         /* A number is valid label, so we'll check this beforehand */
         if(number_index != DEFAULT_INT)

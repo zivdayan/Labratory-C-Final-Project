@@ -129,7 +129,7 @@ struct ast {
                     num,
                     label,
                     reg,
-                    index
+                    index_operand
                 } operand_type;
                 /*operands = {source-operand, target-operand}*/
                 /*operands = {target-operand, NONE}*/
