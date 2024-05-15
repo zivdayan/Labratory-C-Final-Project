@@ -1,10 +1,10 @@
 #include "secondPass.h"
-#include "frontend.h";
-#include "middle_common.h";
+#include "frontend.h"
+#include "middle_common.h"
 
 int secondPass(struct translation_unit *prog, const char *amFileName, FILE *amFile, struct Node *macro_list)
 {
-    // Todo change names and errors strings and move them to error_msg.h
+    /* Todo change names and errors strings and move them to error_msg.h */
     char line[81] = {0};
     int errorFlag = 0;
     int lineC = 1;
@@ -22,7 +22,7 @@ int secondPass(struct translation_unit *prog, const char *amFileName, FILE *amFi
             prog->code_image[prog->IC] = line_struct.ast_options.inst.operands[0].operand_type << 9;
             prog->code_image[prog->IC] |= line_struct.ast_options.inst.operands[1].operand_type << 2;
             prog->code_image[prog->IC] |= line_struct.ast_options.inst.inst_type >> 5;
-            prog->IC;
+            /*TODO : FIXIT prog->IC; */
             if (line_struct.ast_options.inst.operands[0].operand_type == reg && line_struct.ast_options.inst.operands[1].operand_type == reg)
             {
                 prog->code_image[prog->IC] = line_struct.ast_options.inst.operands[0].operand_options.reg << 7;
@@ -35,7 +35,7 @@ int secondPass(struct translation_unit *prog, const char *amFileName, FILE *amFi
                 {
                     if (line_struct.ast_options.inst.operands[i].operand_type == reg)
                     {
-                        prog->code_image[prog->IC] = line_struct.ast_options.inst.operands[i].operand_options.reg << 7 - (i * 5);
+                        prog->code_image[prog->IC] = (line_struct.ast_options.inst.operands[i].operand_options.reg << (7 - (i * 5)));
                     }
                     else if (line_struct.ast_options.inst.operands[i].operand_type == label)
                     {

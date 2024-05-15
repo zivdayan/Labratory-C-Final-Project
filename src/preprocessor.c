@@ -1,6 +1,4 @@
 #include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
 #include "preprocessor.h"
 
 #define as_file_ext ".as"
@@ -8,6 +6,36 @@
 #define MAX_MACRO_LEN 31
 #define SPACES " \t\v\f\n"
 #define MAX_LINE_LEN 80
+
+
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+extern char* strdup(const char*);
+
+
+void split_by_first_space(char *str, char **item1, char **item2)
+{
+    /* Use strtok to split the string */
+    char *token = strtok(str, " ");
+    
+    /* If there's no space, the entire string is the first part */
+    if (token != NULL) {
+        *item1 = strdup(token); 
+        token = strtok(NULL, " ");
+        
+        /* If there's a second part, set it */
+        if (token != NULL) {
+            *item2 = strdup(token); /* Duplicate the token to second part */
+        } else {
+            *item2 = " ";
+        }
+    } else {
+        *item1 = strdup(str); /* No space found, whole string is first part */
+        *item2 = " ";
+    }
+}
+
 
 /*Todo: change macro table to nodes list*/
 struct Macro
@@ -62,7 +90,7 @@ int macro_line(char *s, struct Macro **macro, struct Macro *macro_table, int *ta
     char *c2;
     struct Macro *f;
 
-    SPLIT_BY_FIRST_SPACE(s, item1, item2);
+    split_by_first_space(s, &item1, &item2);
 
     if (strstr(item1, "endmcr"))
     {

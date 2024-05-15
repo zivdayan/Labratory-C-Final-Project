@@ -2,9 +2,9 @@
 #include "frontend.h"
 #include "structs.h"
 #include <string.h>
-#include "middle_common.h";
+#include "middle_common.h"
 
-// Todo change names and errors strings and move them to error_msg.h
+/* Todo change names and errors strings and move them to error_msg.h */
 
 int firstPass(struct translation_unit *prog, const char *amFileName, FILE *amFile, struct Node *macro_list)
 {
@@ -45,7 +45,7 @@ int firstPass(struct translation_unit *prog, const char *amFileName, FILE *amFil
             }
             else
             {
-                // Todo - change it to dynamic data structure
+                /* Todo - change it to dynamic data structure */
                 strcpy(prog->symbol_table[prog->symCount].symName, line_struct.labelName);
                 prog->symbol_table[prog->symCount].symType = line_struct.line_type == ast_inst ? symCode : symData;
                 prog->symbol_table[prog->symCount].address = line_struct.line_type == ast_inst ? ic : dc;

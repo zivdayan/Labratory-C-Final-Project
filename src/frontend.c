@@ -4,6 +4,16 @@
 #include <stdio.h>
 #include "utils.h"
 
+static int line_contains_label_decleration(struct string_sep_result *ssr);
+static int is_keyword(char *str, char *collection[], int length);
+static int is_number(char *str, int max, int min);
+static int is_instruction_line(struct string_sep_result ssr);
+static int is_dir_line(struct string_sep_result ssr);
+static int parse_inst_operand(char *operand, int operand_type, struct ast *ast, struct Instruction inst);
+static int is_valid_label(char *str);
+static char *remove_last_char(char *str);
+static struct string_sep_result *strip_first_element(struct string_sep_result *ssr);
+
 char *REGISTERS[] = {"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7"};
 
 char *DIRECTIVES[] = {".data", ".string", ".extern", ".entry"};

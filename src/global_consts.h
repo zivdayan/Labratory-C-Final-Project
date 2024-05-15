@@ -1,3 +1,4 @@
+typedef int dummy_typedef;
 #define INSTRUCTIONS_LEN 16
 #define REG_LEN 8
 #define WORD_LEN 12

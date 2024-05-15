@@ -1,3 +1,6 @@
+#ifndef DEFINED_FRONTEND_H
+#define DEFINED_FRONTEND_H
+
 #define MAX_LENGTH_DATA_TYPE 80
 #define SYNTAX_ERROR_LENGTH 200
 #include "global_consts.h"
@@ -158,13 +161,7 @@ struct ast
 };
 
 struct ast *get_ast_from_line(char *line, struct Node *macro_list);
-static int line_contains_label_decleration(struct string_sep_result *ssr);
-static int is_keyword(char *str, char *collection[], int length);
-static int is_number(char *str, int max, int min);
-static int is_instruction_line(struct string_sep_result ssr);
-static int is_dir_line(struct string_sep_result ssr);
 void string_sep(char *original_str, struct string_sep_result *ssr);
-static int parse_inst_operand(char *operand, int operand_type, struct ast *ast, struct Instruction inst);
-static int is_valid_label(char *str);
-static char *remove_last_char(char *str);
-static struct string_sep_result *strip_first_element(struct string_sep_result *ssr);
+
+
+#endif
