@@ -4,7 +4,7 @@
 #include <string.h>
 #include "middle_common.h";
 
-// Todo - change names and errors;
+// Todo change names and errors strings and move them to error_msg.h
 
 int firstPass(struct translation_unit *prog, const char *amFileName, FILE *amFile, struct Node *macro_list)
 {

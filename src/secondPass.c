@@ -4,7 +4,7 @@
 
 int secondPass(struct translation_unit *prog, const char *amFileName, FILE *amFile, struct Node *macro_list)
 {
-    // Todo change names and errors strings
+    // Todo change names and errors strings and move them to error_msg.h
     char line[81] = {0};
     int errorFlag = 0;
     int lineC = 1;

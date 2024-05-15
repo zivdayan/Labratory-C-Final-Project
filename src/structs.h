@@ -4,9 +4,11 @@
 #ifndef DEFINED_STRUCTS_H
 #define DEFINED_STRUCTS_H
 
-struct symbol{
+struct symbol
+{
     char symName[32];
-    enum {
+    enum
+    {
         symExtern,
         symEntry,
         symCode,
@@ -17,13 +19,15 @@ struct symbol{
     int address;
 };
 
-struct extr {
+struct extr
+{
     char *externalName;
     int addresses[1024];
     int address_count;
 };
 
-struct translation_unit {
+struct translation_unit
+{
     int code_image[MAX_MEM_SIZE];
     int IC;
     int data_image[MAX_MEM_SIZE];
@@ -32,16 +36,14 @@ struct translation_unit {
     int symCount;
     struct extr externals[MAX_SYMBOLS];
     int extCount;
-    struct symbol * entries[MAX_SYMBOLS];
+    struct symbol *entries[MAX_SYMBOLS];
     int entries_count;
-
 };
-
 
 struct Node
 {
-  char * value;
-  struct Node *next;
+    char *value;
+    struct Node *next;
 };
 
 #endif

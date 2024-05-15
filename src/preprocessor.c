@@ -9,6 +9,7 @@
 #define SPACES " \t\v\f\n"
 #define MAX_LINE_LEN 80
 
+/*Todo: change macro table to nodes list*/
 struct Macro
 {
     char macroName[MAX_MACRO_LEN + 1];
@@ -75,7 +76,6 @@ int macro_line(char *s, struct Macro **macro, struct Macro *macro_table, int *ta
         if (c2)
             *c2 = '\0';
 
-        
         strncpy(newMacro.macroName, item2, MAX_MACRO_LEN);
         newMacro.lineCounter = 0;
         newMacro.macroLines = malloc(10 * sizeof(char *));

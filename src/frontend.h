@@ -8,7 +8,6 @@
 #include <stdio.h>
 #include "error_msg.h"
 
-
 #define SPACES " \t\v\f"
 
 #define ERROR_CODE_44 44
@@ -32,45 +31,57 @@ struct Instruction
     const char *dest;
 };
 
-struct string_sep_result {
+struct string_sep_result
+{
     char *strings[80];
     int strings_count;
 };
 
-struct ast {
+struct ast
+{
     char lineError[SYNTAX_ERROR_LENGTH];
     char labelName[MAX_LABEL_LENGTH];
-    /* Define all possible directives */ 
-    enum {
+    /* Define all possible directives */
+    enum
+    {
         ast_inst,
         ast_dir,
         ast_define,
         ast_empty
     } line_type;
-    union {
-        struct {
+    union
+    {
+        struct
+        {
             char label[MAX_LABEL_LENGTH];
             int number;
         } define;
-        struct {
-            enum {
+        struct
+        {
+            enum
+            {
                 ast_extern,
                 ast_entry,
                 ast_string,
                 ast_data
             } dir_type;
 
-            union {
+            union
+            {
                 char label[MAX_LABEL_LENGTH];
                 char string[MAX_LINE_LENGTH];
-                struct {
+                struct
+                {
                     int data_length;
-                        struct {
-                        enum {
+                    struct
+                    {
+                        enum
+                        {
                             data_label,
                             data_number
                         } data_type;
-                        union {
+                        union
+                        {
                             char label[MAX_LABEL_LENGTH];
                             int number;
                         } data_value;
@@ -81,28 +92,32 @@ struct ast {
         } dir;
 
         /* Define all possible instructions */
-        struct {
-            enum {
-                inst_mov=0,
-                inst_cmp=1,
-                inst_add=2,
-                inst_sub=3,
-                inst_not=4,
-                inst_clr=5,
-                inst_lea=6,
-                inst_inc=7,
-                inst_dec=8,
-                inst_jmp=9,
-                inst_bne=10,
-                inst_red=11,
-                inst_prn=12,
-                inst_jsr=13,
-                inst_rts=14,
-                inst_hlt=15
+        struct
+        {
+            enum
+            {
+                inst_mov = 0,
+                inst_cmp = 1,
+                inst_add = 2,
+                inst_sub = 3,
+                inst_not = 4,
+                inst_clr = 5,
+                inst_lea = 6,
+                inst_inc = 7,
+                inst_dec = 8,
+                inst_jmp = 9,
+                inst_bne = 10,
+                inst_red = 11,
+                inst_prn = 12,
+                inst_jsr = 13,
+                inst_rts = 14,
+                inst_hlt = 15
             } inst_type;
 
-            struct {
-                enum {
+            struct
+            {
+                enum
+                {
                     addrs_none,
                     addrs_immed_const,
                     addrs_immed_label,
@@ -111,20 +126,24 @@ struct ast {
                     adddrs_index_label,
                     addrs_register
                 } addrs_mode;
-                union {
+                union
+                {
                     int immed;
                     char label[MAX_LABEL_LENGTH];
                     int reg;
-                    /* Define the index addressing case - Example: mov x[2], r2 */ 
-                    struct {
+                    /* Define the index addressing case - Example: mov x[2], r2 */
+                    struct
+                    {
                         char label[MAX_LABEL_LENGTH];
-                        union {
+                        union
+                        {
                             int number;
                             char label[MAX_LABEL_LENGTH];
                         } index_option;
                     } index;
-                }operand_options;
-                enum {
+                } operand_options;
+                enum
+                {
                     none,
                     num,
                     label,
@@ -136,7 +155,6 @@ struct ast {
             } operands[2];
         } inst;
     } ast_options;
-
 };
 
 struct ast *get_ast_from_line(char *line, struct Node *macro_list);
