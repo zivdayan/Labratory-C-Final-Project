@@ -1,5 +1,5 @@
  GLOBAL_DEPS = global_consts.h
- COMPILE_DEPS = assembler.o frontend.o preprocessor.o firstPass.o secondPass.o utils.o
+ COMPILE_DEPS = assembler.o frontend.o preprocessor.o firstPass.o secondPass.o utils.o backend.o
 
 
 assembler: $(COMPILE_DEPS) $(GLOBAL_DEPS) 
@@ -25,6 +25,9 @@ secondPass.o: secondPass.c secondPass.h $(GLOBAL_DEPS)
 
 utils.o: utils.c utils.h $(GLOBAL_DEPS)
 	gcc -g -c -Wall -ansi -pedantic utils.c -o utils.o
+
+backend.o: utils.c utils.h $(GLOBAL_DEPS)
+	gcc -g -c -Wall -ansi -pedantic backend.c -o backend.o
 
 clean:
 	rm -rf *.o *.am *.ob *.ent *.ext

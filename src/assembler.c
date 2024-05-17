@@ -21,9 +21,6 @@
  * @return Returns 0 on successful assembly.
  */
 
-void print_ob_file(const char *bname, const struct translation_unit *program);
-void print_ent_file(const char *bname, const struct translation_unit *program);
-void print_ext_file(const char *bname, const struct translation_unit *program);
 
 int main(int argc, char *argv[])
 {
