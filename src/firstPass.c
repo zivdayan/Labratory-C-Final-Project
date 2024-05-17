@@ -2,7 +2,7 @@
 #include "frontend.h"
 #include "structs.h"
 #include <string.h>
-#include "middle_common.h"
+#include "utils.h"
 
 /* Todo change names and errors strings and move them to error_msg.h */
 

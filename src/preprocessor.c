@@ -1,5 +1,10 @@
 #include <string.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
 #include "preprocessor.h"
+#include "utils.h"
 
 #define as_file_ext ".as"
 #define am_file_ext ".am"
@@ -8,9 +13,7 @@
 #define MAX_LINE_LEN 80
 
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
+
 extern char* strdup(const char*);
 
 

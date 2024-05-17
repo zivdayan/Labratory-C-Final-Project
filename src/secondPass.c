@@ -1,6 +1,6 @@
 #include "secondPass.h"
 #include "frontend.h"
-#include "middle_common.h"
+#include "utils.h"
 
 int secondPass(struct translation_unit *prog, const char *amFileName, FILE *amFile, struct Node *macro_list)
 {
