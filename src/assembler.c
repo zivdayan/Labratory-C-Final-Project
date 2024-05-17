@@ -5,6 +5,7 @@
 #include "structs.h"
 #include "firstPass.h"
 #include "secondPass.h"
+#include "backend.h"
 
 /**
  * Main function to handle and assemble an input file.
@@ -62,14 +63,14 @@ int main(int argc, char *argv[])
             /* -- Execute Second pass -- */
             if (!secondPass(&program, amFileName, amFile, *output_macro_list))
             {
-                /* TODO - FINISH */
-                /* print_ob_file(current_file, &program);
+                
+                print_ob_file(current_file, &program);
                 if (program.entries_count >= 1)
                     print_ent_file(current_file, &program);
 
                 if (program.extCount >= 1)
                     print_ext_file(current_file, &program);
-                */
+                
             }
         }
     }
