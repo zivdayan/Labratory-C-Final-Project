@@ -15,24 +15,21 @@
 
 
 extern char* strdup(const char*);
+char *strndup( const char *str, size_t size );
 
 
 void split_by_first_space(char *str, char **item1, char **item2)
 {
     /* Use strtok to split the string */
-    char *token = strtok(str, " ");
+    char *token = strchr(str, ' ');
     
     /* If there's no space, the entire string is the first part */
     if (token != NULL) {
-        *item1 = strdup(token); 
-        token = strtok(NULL, " ");
+        /* Allocate memory and copy the first part */
+        *item1 = strndup(str, token - str);
         
-        /* If there's a second part, set it */
-        if (token != NULL) {
-            *item2 = strdup(token); /* Duplicate the token to second part */
-        } else {
-            *item2 = "";
-        }
+        /* Allocate memory and copy the second part */
+        *item2 = strdup(token + 1);
     } else {
         *item1 = strdup(str); /* No space found, whole string is first part */
         *item2 = "";
@@ -70,19 +67,21 @@ static void get_macro_list(struct Macro *macroTable, int macro_count, struct Nod
     if (!macro_count)
         return;
 
-    curr_node = malloc(sizeof(struct Node));
-    curr_node->value = macroTable[i++].macroName;
+    output_macro_list = malloc(sizeof(struct Node));
 
-    output_macro_list = curr_node;
+    curr_node = output_macro_list;
+    strcpy(curr_node->value,macroTable[i++].macroName);
+
 
     while (i < macro_count)
     {
         next_node = malloc(sizeof(struct Node));
-        next_node->value = macroTable[i++].macroName;
+        strcpy(next_node->value,macroTable[i++].macroName);
 
         curr_node->next = next_node;
         curr_node = next_node;
     }
+
 }
 
 int macro_line(char *s, struct Macro **macro, struct Macro *macro_table, int *table_size)
@@ -92,6 +91,8 @@ int macro_line(char *s, struct Macro **macro, struct Macro *macro_table, int *ta
     struct Macro newMacro;
     char *c2;
     struct Macro *f;
+
+    s[strcspn(s, "\r\n")] = 0; /* Mark end of line */
 
     item1 = malloc(sizeof(char*) * (MAX_LINE_LEN + 1));
     item2 = malloc(sizeof(char*) * (MAX_LINE_LEN + 1));
@@ -162,7 +163,7 @@ char *preproc(char *bname, struct Node *output_macro_list)
 
     int i, j;
 
-    output_macro_list = malloc(sizeof(struct Node));
+    output_macro_list = malloc(sizeof(struct Node) * MAX_LINE_LENGTH);
 
     as_file = fopen(asFileName, "r");
     am_file = fopen(amFileName, "w");
