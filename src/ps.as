@@ -1,1 +1,0 @@
-MAIN: mov                r3, LIST[sz] 
