@@ -91,8 +91,7 @@ int macro_line(char *s, struct Macro **macro, struct Macro *macro_table, int *ta
     struct Macro newMacro;
     char *c2;
     struct Macro *f;
-
-    s[strcspn(s, "\r\n")] = 0; /* Mark end of line */
+    
 
     item1 = malloc(sizeof(char*) * (MAX_LINE_LEN + 1));
     item2 = malloc(sizeof(char*) * (MAX_LINE_LEN + 1));
