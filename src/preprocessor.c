@@ -45,9 +45,10 @@ struct Macro
     int lineCounter;
 };
 
-struct Macro *searchMacro(struct Macro *macroTable, const int tableSize, const char *name)
+struct Macro *searchMacro(struct Macro *macroTable, const int tableSize, char *name)
 {
     int i;
+    name[strcspn(name, "\r\n")] = 0; /* Mark end of line */
     for (i = 0; i < tableSize; i++)
     {
         if (strcmp(macroTable[i].macroName, name) == 0)
@@ -104,7 +105,7 @@ int macro_line(char *s, struct Macro **macro, struct Macro *macro_table, int *ta
         return 0;
     }
 
-    if (strstr(item1, "mcr"))
+    if (!strcmp(item1, "mcr"))
     {
         char *c2 = strpbrk(item2, SPACES);
         if (c2)
@@ -122,10 +123,11 @@ int macro_line(char *s, struct Macro **macro, struct Macro *macro_table, int *ta
     c2 = strpbrk(item2, SPACES);
     if (c2)
         *c2 = '\0';
-    f = searchMacro(macro_table, *table_size, item2);
+    f = searchMacro(macro_table, *table_size, item1);
 
     free(item1);
-    free(item2);
+    if(strcmp(item2,""))
+        free(item2);
 
     if (f)
     {
