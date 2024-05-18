@@ -1,18 +1,15 @@
 .define sz = 2
 MAIN: mov r3, LIST[sz]
 LOOP: jmp L1
-mcr m_mcr
+prn #-5
+mov STR[5], STR[2]
+sub r1, r4
 cmp r3, #sz
- bne END
-endmcr
- prn #-5
- mov STR[5], STR[2]
- sub r1, r4
- m_mcr
+bne END
 L1: inc K
- bne LOOP
+bne LOOP
 END: hlt
 .define len = 4
-STR: .string “abcdef”
+STR: .string "abcdef"
 LIST: .data 6, -9, len
-K: .data 22 
+K: .data 22

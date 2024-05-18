@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
         char *amFileName = "";
         FILE *amFile;
         char *current_file = *pargv;
-        struct Node **output_macro_list = NULL;
+        struct Node *output_macro_list = NULL;
 
         printf("Starting preprocessor - %s \n", current_file);
 
@@ -52,13 +52,13 @@ int main(int argc, char *argv[])
 
         /* -- Execute First pass -- */
 
-        if (!firstPass(&program, amFileName, amFile, *output_macro_list))
+        if (!firstPass(&program, amFileName, amFile, output_macro_list))
         {
             rewind(amFile);
             printf("Starting second pass - %s \n", current_file);
 
             /* -- Execute Second pass -- */
-            if (!secondPass(&program, amFileName, amFile, *output_macro_list))
+            if (!secondPass(&program, amFileName, amFile, output_macro_list))
             {
                 
                 print_ob_file(current_file, &program);
