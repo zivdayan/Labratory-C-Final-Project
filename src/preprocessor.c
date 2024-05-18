@@ -31,11 +31,11 @@ void split_by_first_space(char *str, char **item1, char **item2)
         if (token != NULL) {
             *item2 = strdup(token); /* Duplicate the token to second part */
         } else {
-            *item2 = " ";
+            *item2 = "";
         }
     } else {
         *item1 = strdup(str); /* No space found, whole string is first part */
-        *item2 = " ";
+        *item2 = "";
     }
 }
 
@@ -61,7 +61,7 @@ struct Macro *searchMacro(struct Macro *macroTable, const int tableSize, const c
     return NULL;
 }
 
-static void get_macro_list(struct Macro *macroTable, int macro_count, struct Node **output_macro_list)
+static void get_macro_list(struct Macro *macroTable, int macro_count, struct Node *output_macro_list)
 {
     struct Node *curr_node;
     struct Node *next_node;
@@ -73,7 +73,7 @@ static void get_macro_list(struct Macro *macroTable, int macro_count, struct Nod
     curr_node = malloc(sizeof(struct Node));
     curr_node->value = macroTable[i++].macroName;
 
-    *output_macro_list = curr_node;
+    output_macro_list = curr_node;
 
     while (i < macro_count)
     {
@@ -87,11 +87,14 @@ static void get_macro_list(struct Macro *macroTable, int macro_count, struct Nod
 
 int macro_line(char *s, struct Macro **macro, struct Macro *macro_table, int *table_size)
 {
-    char *item1 = NULL;
-    char *item2 = NULL;
+    char *item1;
+    char *item2;
     struct Macro newMacro;
     char *c2;
     struct Macro *f;
+
+    item1 = malloc(sizeof(char*) * (MAX_LINE_LEN + 1));
+    item2 = malloc(sizeof(char*) * (MAX_LINE_LEN + 1));
 
     split_by_first_space(s, &item1, &item2);
 
@@ -121,6 +124,9 @@ int macro_line(char *s, struct Macro **macro, struct Macro *macro_table, int *ta
         *c2 = '\0';
     f = searchMacro(macro_table, *table_size, item2);
 
+    free(item1);
+    free(item2);
+
     if (f)
     {
         *macro = f;
@@ -141,7 +147,7 @@ char *strcatWithMalloc(const char *s1, const char *s2)
     return result;
 }
 
-char *preproc(char *bname, struct Node **output_macro_list)
+char *preproc(char *bname, struct Node *output_macro_list)
 {
     char line[MAX_LINE_LEN] = {0};
     struct Macro *macro_table = malloc(10 * sizeof(struct Macro));
@@ -152,7 +158,11 @@ char *preproc(char *bname, struct Node **output_macro_list)
     char *asFileName = strcatWithMalloc(bname, as_file_ext);
     char *amFileName = strcatWithMalloc(bname, am_file_ext);
 
+    
+
     int i, j;
+
+    output_macro_list = malloc(sizeof(struct Node));
 
     as_file = fopen(asFileName, "r");
     am_file = fopen(amFileName, "w");
