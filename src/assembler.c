@@ -41,7 +41,9 @@ int main(int argc, char *argv[])
 
         printf("Starting preprocessor - %s \n", current_file);
 
-        if (!preproc(current_file, output_macro_list))
+        amFileName = preproc(current_file, output_macro_list);
+
+        if (!strcmp(amFileName, ""))
             continue;
 
         printf("Preprocessor done, file name: %s \n", amFileName);

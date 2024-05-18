@@ -226,7 +226,6 @@ char *preproc(char *bname, struct Node *output_macro_list)
 
     free(macro_table);
     free(asFileName);
-    free(amFileName);
 
     return amFileName;
 }
