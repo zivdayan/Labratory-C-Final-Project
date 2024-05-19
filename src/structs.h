@@ -1,7 +1,6 @@
 #define MAX_MEM_SIZE 80
 #define MAX_SYMBOLS 80
 
-
 #ifndef DEFINED_STRUCTS_H
 #define DEFINED_STRUCTS_H
 
@@ -9,13 +8,14 @@
 
 struct symbol
 {
-    char symName[32];
+    char symName[MAX_LABEL_LENGTH];
     enum
     {
         symExtern,
         symEntry,
         symCode,
         symData,
+        symDefine,
         symEntryCode,
         symEntryData
     } symType;

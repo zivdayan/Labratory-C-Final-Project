@@ -64,12 +64,12 @@ int main(int argc, char *argv[])
             if (!secondPass(program, amFileName, amFile, output_macro_list))
             {
 
-                print_ob_file(current_file, &program);
+                print_ob_file(current_file, program);
                 if (program->entries_count >= 1)
-                    print_ent_file(current_file, &program);
+                    print_ent_file(current_file, program);
 
                 if (program->extCount >= 1)
-                    print_ext_file(current_file, &program);
+                    print_ext_file(current_file, program);
             }
         }
     }

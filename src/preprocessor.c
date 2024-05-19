@@ -12,30 +12,30 @@
 #define SPACES " \t\v\f\n"
 #define MAX_LINE_LEN 80
 
+extern char *strdup(const char *);
+char *strndup(const char *str, size_t size);
 
-
-extern char* strdup(const char*);
-char *strndup( const char *str, size_t size );
-
-
+/*Todo - fix when there is a space*/
 void split_by_first_space(char *str, char **item1, char **item2)
 {
     /* Use strtok to split the string */
     char *token = strchr(str, ' ');
-    
+
     /* If there's no space, the entire string is the first part */
-    if (token != NULL) {
+    if (token != NULL)
+    {
         /* Allocate memory and copy the first part */
         *item1 = strndup(str, token - str);
-        
+
         /* Allocate memory and copy the second part */
         *item2 = strdup(token + 1);
-    } else {
+    }
+    else
+    {
         *item1 = strdup(str); /* No space found, whole string is first part */
         *item2 = "";
     }
 }
-
 
 /*Todo: change macro table to nodes list*/
 struct Macro
@@ -71,18 +71,16 @@ static void get_macro_list(struct Macro *macroTable, int macro_count, struct Nod
     output_macro_list = malloc(sizeof(struct Node));
 
     curr_node = output_macro_list;
-    strcpy(curr_node->value,macroTable[i++].macroName);
-
+    strcpy(curr_node->value, macroTable[i++].macroName);
 
     while (i < macro_count)
     {
         next_node = malloc(sizeof(struct Node));
-        strcpy(next_node->value,macroTable[i++].macroName);
+        strcpy(next_node->value, macroTable[i++].macroName);
 
         curr_node->next = next_node;
         curr_node = next_node;
     }
-
 }
 
 int macro_line(char *s, struct Macro **macro, struct Macro *macro_table, int *table_size)
@@ -92,10 +90,9 @@ int macro_line(char *s, struct Macro **macro, struct Macro *macro_table, int *ta
     struct Macro newMacro;
     char *c2;
     struct Macro *f;
-    
 
-    item1 = malloc(sizeof(char*) * (MAX_LINE_LEN + 1));
-    item2 = malloc(sizeof(char*) * (MAX_LINE_LEN + 1));
+    item1 = malloc(sizeof(char *) * (MAX_LINE_LEN + 1));
+    item2 = malloc(sizeof(char *) * (MAX_LINE_LEN + 1));
 
     split_by_first_space(s, &item1, &item2);
 
@@ -126,7 +123,7 @@ int macro_line(char *s, struct Macro **macro, struct Macro *macro_table, int *ta
     f = searchMacro(macro_table, *table_size, item1);
 
     free(item1);
-    if(strcmp(item2,""))
+    if (strcmp(item2, ""))
         free(item2);
 
     if (f)
@@ -159,8 +156,6 @@ char *preproc(char *bname, struct Node *output_macro_list)
     struct Macro *macro = NULL;
     char *asFileName = strcatWithMalloc(bname, as_file_ext);
     char *amFileName = strcatWithMalloc(bname, am_file_ext);
-
-    
 
     int i, j;
 

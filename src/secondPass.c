@@ -19,14 +19,69 @@ int secondPass(struct translation_unit *prog, const char *amFileName, FILE *amFi
         line_struct = *get_ast_from_line(line, macro_list);
         if (line_struct.line_type == ast_inst)
         {
-            prog->code_image[prog->IC] = line_struct.ast_options.inst.operands[0].operand_type << 9;
-            prog->code_image[prog->IC] |= line_struct.ast_options.inst.operands[1].operand_type << 2;
-            prog->code_image[prog->IC] |= line_struct.ast_options.inst.inst_type >> 5;
-            /*TODO : FIXIT prog->IC; */
+            prog->code_image[prog->IC] = line_struct.ast_options.inst.inst_type >> 6;
+
+            if (line_struct.ast_options.inst.operands[1].operand_type == none)
+            {
+                if (line_struct.ast_options.inst.operands[0].addrs_mode == addrs_immed_const || line_struct.ast_options.inst.operands[0].addrs_mode == addrs_immed_label)
+                {
+                    prog->code_image[prog->IC] |= 0 << 2;
+                }
+                else if (line_struct.ast_options.inst.operands[0].addrs_mode == addrs_label)
+                {
+                    prog->code_image[prog->IC] |= 1 << 2;
+                }
+                else if (line_struct.ast_options.inst.operands[0].addrs_mode == adddrs_index_const || line_struct.ast_options.inst.operands[0].addrs_mode == adddrs_index_label)
+                {
+                    prog->code_image[prog->IC] |= 2 << 2;
+                }
+                else if (line_struct.ast_options.inst.operands[0].addrs_mode == addrs_register)
+                {
+                    prog->code_image[prog->IC] |= 3 << 2;
+                }
+            }
+            else
+            {
+                if (line_struct.ast_options.inst.operands[0].addrs_mode == addrs_immed_const || line_struct.ast_options.inst.operands[0].addrs_mode == addrs_immed_label)
+                {
+                    prog->code_image[prog->IC] |= 0 << 4;
+                }
+                else if (line_struct.ast_options.inst.operands[0].addrs_mode == addrs_label)
+                {
+                    prog->code_image[prog->IC] |= 1 << 4;
+                }
+                else if (line_struct.ast_options.inst.operands[0].addrs_mode == adddrs_index_const || line_struct.ast_options.inst.operands[0].addrs_mode == adddrs_index_label)
+                {
+                    prog->code_image[prog->IC] |= 2 << 4;
+                }
+                else if (line_struct.ast_options.inst.operands[0].addrs_mode == addrs_register)
+                {
+                    prog->code_image[prog->IC] |= 3 << 4;
+                }
+
+                if (line_struct.ast_options.inst.operands[1].addrs_mode == addrs_immed_const || line_struct.ast_options.inst.operands[1].addrs_mode == addrs_immed_label)
+                {
+                    prog->code_image[prog->IC] |= 0 << 2;
+                }
+                else if (line_struct.ast_options.inst.operands[1].addrs_mode == addrs_label)
+                {
+                    prog->code_image[prog->IC] |= 1 << 2;
+                }
+                else if (line_struct.ast_options.inst.operands[1].addrs_mode == adddrs_index_const || line_struct.ast_options.inst.operands[1].addrs_mode == adddrs_index_label)
+                {
+                    prog->code_image[prog->IC] |= 2 << 2;
+                }
+                else if (line_struct.ast_options.inst.operands[1].addrs_mode == addrs_register)
+                {
+                    prog->code_image[prog->IC] |= 3 << 2;
+                }
+            }
+
+            prog->IC++;
             if (line_struct.ast_options.inst.operands[0].operand_type == reg && line_struct.ast_options.inst.operands[1].operand_type == reg)
             {
-                prog->code_image[prog->IC] = line_struct.ast_options.inst.operands[0].operand_options.reg << 7;
-                prog->code_image[prog->IC] |= line_struct.ast_options.inst.operands[1].operand_options.reg << 2;
+                prog->code_image[prog->IC] = 3 << 5;
+                prog->code_image[prog->IC] |= 3 << 3;
                 prog->IC++;
             }
             else
@@ -35,14 +90,14 @@ int secondPass(struct translation_unit *prog, const char *amFileName, FILE *amFi
                 {
                     if (line_struct.ast_options.inst.operands[i].operand_type == reg)
                     {
-                        prog->code_image[prog->IC] = (line_struct.ast_options.inst.operands[i].operand_options.reg << (7 - (i * 5)));
+                        prog->code_image[prog->IC] = (3 << (5 - (i * 2)));
                     }
                     else if (line_struct.ast_options.inst.operands[i].operand_type == label)
                     {
                         SymFind = symbolLookUp(prog->symbol_table, prog->symCount, line_struct.ast_options.inst.operands[i].operand_options.label);
                         if (SymFind)
                         {
-                            prog->code_image[prog->IC] = SymFind->address << 2;
+                            prog->code_image[prog->IC] = SymFind->address;
                             if (SymFind->symType == symExtern)
                             {
                                 prog->code_image[prog->IC] |= 1;
@@ -62,7 +117,7 @@ int secondPass(struct translation_unit *prog, const char *amFileName, FILE *amFi
                             }
                             else
                             {
-                                prog->code_image[prog->IC] |= 2;
+                                prog->code_image[prog->IC] = (1 << (5 - (i * 2)));
                             }
                         }
                         else
@@ -73,7 +128,7 @@ int secondPass(struct translation_unit *prog, const char *amFileName, FILE *amFi
                     }
                     else if (line_struct.ast_options.inst.operands[i].operand_type == num)
                     {
-                        prog->code_image[prog->IC] = line_struct.ast_options.inst.operands[i].operand_options.immed << 2;
+                        prog->code_image[prog->IC] |= (0 << (5 - (i * 2)));
                     }
                     if (line_struct.ast_options.inst.operands[i].operand_type != none)
                     {

@@ -27,7 +27,7 @@ int firstPass(struct translation_unit *prog, const char *amFileName, FILE *amFil
             errorFlag = 1;
             continue;
         }
-        if (line_struct.labelName != NULL && (line_struct.line_type == ast_inst || (line_struct.line_type == ast_dir && (line_struct.ast_options.dir.dir_type == ast_data || line_struct.ast_options.dir.dir_type == ast_string))))
+        if (line_struct.labelName[0] != '\0' && (line_struct.line_type == ast_inst || (line_struct.line_type == ast_dir && (line_struct.ast_options.dir.dir_type == ast_data || line_struct.ast_options.dir.dir_type == ast_string))))
         {
             SymFind = symbolLookUp(prog->symbol_table, prog->symCount, line_struct.labelName);
             if (SymFind)
@@ -61,6 +61,7 @@ int firstPass(struct translation_unit *prog, const char *amFileName, FILE *amFil
             }
             else
             {
+                ic += (line_struct.ast_options.inst.operands[0].operand_type == index_operand) + (line_struct.ast_options.inst.operands[1].operand_type == index_operand);
                 ic += (line_struct.ast_options.inst.operands[0].operand_type >= num) + (line_struct.ast_options.inst.operands[1].operand_type >= num);
             }
         }
@@ -72,15 +73,16 @@ int firstPass(struct translation_unit *prog, const char *amFileName, FILE *amFil
         }
         else if (line_struct.line_type == ast_dir && line_struct.ast_options.dir.dir_type == ast_string)
         {
-            memcpy(&prog->data_image[prog->DC], line_struct.ast_options.dir.dir_options.string, MAX_MEM_SIZE);
-            dc += MAX_MEM_SIZE;
+            memcpy(&prog->data_image[prog->DC], line_struct.ast_options.dir.dir_options.string, strlen(line_struct.ast_options.dir.dir_options.string) + 1);
+            dc += strlen(line_struct.ast_options.dir.dir_options.string) + 1;
             prog->DC = dc;
         }
         else if (line_struct.line_type == ast_define)
         {
-            memcpy(&prog->data_image[prog->DC], line_struct.ast_options.define.number, 20);
-            dc += MAX_MEM_SIZE;
-            prog->DC = dc;
+            strcpy(prog->symbol_table[prog->symCount].symName, line_struct.ast_options.define.label);
+            prog->symbol_table[prog->symCount].symType = symDefine;
+            prog->symbol_table[prog->symCount].address = line_struct.ast_options.define.number;
+            prog->symCount++;
         }
         else if (line_struct.line_type == ast_dir && line_struct.ast_options.dir.dir_type <= ast_entry)
         {
@@ -117,16 +119,16 @@ int firstPass(struct translation_unit *prog, const char *amFileName, FILE *amFil
     }
     for (i = 0; i < prog->symCount; i++)
     {
-        if (prog->symbol_table[1].symType == symEntry)
+        if (prog->symbol_table[i].symType == symEntry)
         {
             printf("%s: error symbol:'%s' declared entry but was never defined", amFileName, prog->symbol_table[i].symName);
             errorFlag = 1;
         }
-        if (prog->symbol_table[1].symType == symData || prog->symbol_table[1].symType == symEntryData)
+        if (prog->symbol_table[i].symType == symData || prog->symbol_table[i].symType == symEntryData)
         {
-            prog->symbol_table[1].address += ic;
+            prog->symbol_table[i].address += ic;
         }
-        if (prog->symbol_table[1].symType >= symEntryCode)
+        if (prog->symbol_table[i].symType >= symEntryCode)
         {
             prog->entries[prog->entries_count] = &prog->symbol_table[i];
             prog->entries_count++;

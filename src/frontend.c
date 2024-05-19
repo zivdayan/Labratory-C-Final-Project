@@ -771,6 +771,7 @@ struct ast *get_ast_from_line(char *line, struct Node *macro_list)
     {
         if (label_declared)
         {
+            strcpy(ast_ptr->lineError, SYNTAX_ERROR_LINE_TOO_LONG);
             error_occured = 1;
             goto invalid_syntax;
         }

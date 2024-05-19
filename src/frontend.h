@@ -14,7 +14,6 @@
 #define SPACES " \t\v\f"
 
 #define ERROR_CODE_44 44
-#define MAX_LABEL_LENGTH 31
 #define IMMEDIATE_ADDRESSING '0'
 #define DIRECT_ADDRESSING '1'
 #define INDEX_ADDRESSING '2'
@@ -162,6 +161,5 @@ struct ast
 
 struct ast *get_ast_from_line(char *line, struct Node *macro_list);
 void string_sep(char *original_str, struct string_sep_result *ssr);
-
 
 #endif
