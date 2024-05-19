@@ -30,4 +30,4 @@ backend.o: utils.c utils.h $(GLOBAL_DEPS)
 	gcc -g -c -Wall -ansi -pedantic backend.c -o backend.o
 
 clean:
-	rm -rf *.o *.am *.ob *.ent *.ext
+	rm -rf *.o *.am *.ob *.ent *.ext assembler

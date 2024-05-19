@@ -21,11 +21,10 @@
  * @return Returns 0 on successful assembly.
  */
 
-
 int main(int argc, char *argv[])
 {
     char **pargv;
-    struct translation_unit program;
+    struct translation_unit *program;
     /* char *as_file, *am_file */;
     if (argc < 2)
     {
@@ -54,22 +53,23 @@ int main(int argc, char *argv[])
 
         /* -- Execute First pass -- */
 
-        if (!firstPass(&program, amFileName, amFile, output_macro_list))
+        program = malloc(sizeof(struct translation_unit));
+
+        if (!firstPass(program, amFileName, amFile, output_macro_list))
         {
             rewind(amFile);
             printf("Starting second pass - %s \n", current_file);
 
             /* -- Execute Second pass -- */
-            if (!secondPass(&program, amFileName, amFile, output_macro_list))
+            if (!secondPass(program, amFileName, amFile, output_macro_list))
             {
-                
+
                 print_ob_file(current_file, &program);
-                if (program.entries_count >= 1)
+                if (program->entries_count >= 1)
                     print_ent_file(current_file, &program);
 
-                if (program.extCount >= 1)
+                if (program->extCount >= 1)
                     print_ext_file(current_file, &program);
-                
             }
         }
     }

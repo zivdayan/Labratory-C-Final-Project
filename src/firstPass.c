@@ -27,7 +27,7 @@ int firstPass(struct translation_unit *prog, const char *amFileName, FILE *amFil
             errorFlag = 1;
             continue;
         }
-        if (line_struct.labelName != NULL && (line_struct.line_type == ast_inst || (line_struct.line_type == ast_dir && line_struct.ast_options.dir.dir_type == ast_data)))
+        if (line_struct.labelName != NULL && (line_struct.line_type == ast_inst || (line_struct.line_type == ast_dir && (line_struct.ast_options.dir.dir_type == ast_data || line_struct.ast_options.dir.dir_type == ast_string))))
         {
             SymFind = symbolLookUp(prog->symbol_table, prog->symCount, line_struct.labelName);
             if (SymFind)
@@ -64,10 +64,22 @@ int firstPass(struct translation_unit *prog, const char *amFileName, FILE *amFil
                 ic += (line_struct.ast_options.inst.operands[0].operand_type >= num) + (line_struct.ast_options.inst.operands[1].operand_type >= num);
             }
         }
-        else if (line_struct.line_type == ast_dir && line_struct.ast_options.dir.dir_type >= ast_data)
+        else if (line_struct.line_type == ast_dir && line_struct.ast_options.dir.dir_type == ast_data)
         {
             memcpy(&prog->data_image[prog->DC], line_struct.ast_options.dir.dir_options.data_array.data, line_struct.ast_options.dir.dir_options.data_array.data_length * sizeof(int));
             dc += line_struct.ast_options.dir.dir_options.data_array.data_length;
+            prog->DC = dc;
+        }
+        else if (line_struct.line_type == ast_dir && line_struct.ast_options.dir.dir_type == ast_string)
+        {
+            memcpy(&prog->data_image[prog->DC], line_struct.ast_options.dir.dir_options.string, MAX_MEM_SIZE);
+            dc += MAX_MEM_SIZE;
+            prog->DC = dc;
+        }
+        else if (line_struct.line_type == ast_define)
+        {
+            memcpy(&prog->data_image[prog->DC], line_struct.ast_options.define.number, 20);
+            dc += MAX_MEM_SIZE;
             prog->DC = dc;
         }
         else if (line_struct.line_type == ast_dir && line_struct.ast_options.dir.dir_type <= ast_entry)
