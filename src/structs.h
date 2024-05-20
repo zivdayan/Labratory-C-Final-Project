@@ -49,4 +49,12 @@ struct Node
     struct Node *next;
 };
 
+enum
+{
+    addressing_immed,
+    addressing_direct,
+    addressing_index,
+    addressing_reg
+} addressing;
+
 #endif
