@@ -1,10 +1,12 @@
 #define MAX_MEM_SIZE 80
 #define MAX_SYMBOLS 80
 
+#include "global_consts.h"
+
 #ifndef DEFINED_STRUCTS_H
 #define DEFINED_STRUCTS_H
 
-#include "global_consts.h"
+
 
 struct symbol
 {
@@ -49,12 +51,15 @@ struct Node
     struct Node *next;
 };
 
-enum
+struct addressing_modes
 {
-    addressing_immed,
-    addressing_direct,
-    addressing_index,
-    addressing_reg
-} addressing;
+    enum
+    {
+        addressing_immed,
+        addressing_direct,
+        addressing_index,
+        addressing_reg
+    } addressing;
+};
 
 #endif

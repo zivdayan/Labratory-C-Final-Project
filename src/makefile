@@ -5,9 +5,6 @@
 assembler: $(COMPILE_DEPS) $(GLOBAL_DEPS) 
 	gcc -g -Wall -ansi -pedantic $(COMPILE_DEPS) $(GLOBAL_DEPS)  -o assembler
 
-frontend: frontend.o utils.o $(GLOBAL_DEPS)
-	gcc -g -Wall -ansi -pedantic frontend.o utils.o -o frontend
-
 assembler.o: assembler.c preprocessor.h $(GLOBAL_DEPS)
 	gcc -g -c -Wall -ansi -pedantic assembler.c -o assembler.o
 

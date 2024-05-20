@@ -13,6 +13,7 @@ int firstPass(struct translation_unit *prog, const char *amFileName, FILE *amFil
     int errorFlag = 0;
     int lineC = 1;
     int i;
+    int j;
 
     struct ast line_struct = {0};
     struct symbol *SymFind;
@@ -67,13 +68,27 @@ int firstPass(struct translation_unit *prog, const char *amFileName, FILE *amFil
         }
         else if (line_struct.line_type == ast_dir && line_struct.ast_options.dir.dir_type == ast_data)
         {
-            memcpy(&prog->data_image[prog->DC], line_struct.ast_options.dir.dir_options.data_array.data, line_struct.ast_options.dir.dir_options.data_array.data_length * sizeof(int));
+            for(j=0;j<line_struct.ast_options.dir.dir_options.data_array.data_length;j++)
+            {
+                if(line_struct.ast_options.dir.dir_options.data_array.data[j].data_type == data_number)
+                    memcpy(&prog->data_image[(prog->DC)+j], &line_struct.ast_options.dir.dir_options.data_array.data[j].data_value.number, sizeof(int));
+                else if (line_struct.ast_options.dir.dir_options.data_array.data[j].data_type == data_label)
+                {
+                    SymFind = symbolLookUp(prog->symbol_table, prog->symCount, line_struct.ast_options.dir.dir_options.data_array.data[j].data_value.label);
+                    memcpy(&prog->data_image[(prog->DC)+j], &SymFind->address, sizeof(int));
+                }
+            }
             dc += line_struct.ast_options.dir.dir_options.data_array.data_length;
             prog->DC = dc;
         }
         else if (line_struct.line_type == ast_dir && line_struct.ast_options.dir.dir_type == ast_string)
         {
-            memcpy(&prog->data_image[prog->DC], line_struct.ast_options.dir.dir_options.string, strlen(line_struct.ast_options.dir.dir_options.string) + 1);
+            for(j=0;j<strlen(line_struct.ast_options.dir.dir_options.string);j++)
+            {
+                memcpy(&prog->data_image[(prog->DC)+j], line_struct.ast_options.dir.dir_options.string + j, 1);
+            }
+            memset(&prog->data_image[(prog->DC)+strlen(line_struct.ast_options.dir.dir_options.string)],0,1);
+            
             dc += strlen(line_struct.ast_options.dir.dir_options.string) + 1;
             prog->DC = dc;
         }
