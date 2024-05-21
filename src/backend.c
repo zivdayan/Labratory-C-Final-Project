@@ -17,12 +17,14 @@ void print_ob_file(const char *bname, const struct translation_unit *program)
     strcat(obFileName, ".ob");
 
     obFile = fopen(obFileName, "w");
+
     if (obFile)
     {
-        /* Todo - add lens title and line index */
+        fprintf(obFile, "%4d %d\n", program->IC, program->DC);
         for (i = 0; i < program->IC; i++)
         {
-            fprintf(obFile, "%c%c%c%c%c%c%c\n",
+            fprintf(obFile, "%04d %c%c%c%c%c%c%c\n",
+                    START_LINE + i,
                     base4enc_table[(program->code_image[i] >> 12) & 0x3],
                     base4enc_table[(program->code_image[i] >> 10) & 0x3],
                     base4enc_table[(program->code_image[i] >> 8) & 0x3],
@@ -34,7 +36,8 @@ void print_ob_file(const char *bname, const struct translation_unit *program)
 
         for (i = 0; i < program->DC; i++)
         {
-            fprintf(obFile, "%c%c%c%c%c%c%c\n",
+            fprintf(obFile, "%04d %c%c%c%c%c%c%c\n",
+                    START_LINE + program->IC + i,
                     base4enc_table[(program->data_image[i] >> 12) & 0x3],
                     base4enc_table[(program->data_image[i] >> 10) & 0x3],
                     base4enc_table[(program->data_image[i] >> 8) & 0x3],
@@ -56,22 +59,24 @@ void print_ent_file(const char *bname, const struct translation_unit *program)
     FILE *entFile;
 
     int i;
-
-    entFileName = malloc(sizeof(char *) * (strlen(bname) + 5));
-    strcpy(entFileName, bname);
-    strcat(entFileName, ".ent");
-
-    entFile = fopen(entFileName, "w"); /* Todo - open file only if there are entries */
-
-    if (entFile)
+    if (program->entries_count)
     {
-        for (i = 0; i < program->entries_count; i++)
+        entFileName = malloc(sizeof(char *) * (strlen(bname) + 5));
+        strcpy(entFileName, bname);
+        strcat(entFileName, ".ent");
+
+        entFile = fopen(entFileName, "w"); /* Todo - open file only if there are entries */
+
+        if (entFile)
         {
-            fprintf(entFile, "%s\t%d\n", program->entries[i]->symName, program->entries[i]->address); /* Todo add zero before address */
+            for (i = 0; i < program->entries_count; i++)
+            {
+                fprintf(entFile, "%s\t%04d\n", program->entries[i]->symName, program->entries[i]->address); /* Todo add zero before address */
+            }
+            fclose(entFile);
         }
-        fclose(entFile);
+        free(entFileName);
     }
-    free(entFileName);
 }
 
 void print_ext_file(const char *bname, const struct translation_unit *program)
@@ -82,24 +87,27 @@ void print_ext_file(const char *bname, const struct translation_unit *program)
 
     int i, j;
 
-    extFileName = malloc(sizeof(char *) * (strlen(bname) + 5));
-    strcpy(extFileName, bname);
-    strcat(extFileName, ".ext");
-
-    extFile = fopen(extFileName, "w"); /* Todo - open file only if there are externals */
-
-    if (extFile)
+    if (program->extCount)
     {
-        for (i = 0; i < program->extCount; i++)
+        extFileName = malloc(sizeof(char *) * (strlen(bname) + 5));
+        strcpy(extFileName, bname);
+        strcat(extFileName, ".ext");
+
+        extFile = fopen(extFileName, "w"); /* Todo - open file only if there are externals */
+
+        if (extFile)
         {
-            for (j = 0; j < program->externals[i].address_count; j++)
+            for (i = 0; i < program->extCount; i++)
             {
-                fprintf(extFile, "%s\t%d\n", program->externals[i].externalName, program->externals[i].addresses[j]); /* Todo add zero before address */
+                for (j = 0; j < program->externals[i].address_count; j++)
+                {
+                    fprintf(extFile, "%s\t%04d\n", program->externals[i].externalName, program->externals[i].addresses[j]); /* Todo add zero before address */
+                }
             }
+
+            fclose(extFile);
         }
 
-        fclose(extFile);
+        free(extFileName);
     }
-
-    free(extFileName);
 }

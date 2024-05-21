@@ -7,6 +7,7 @@
 #include <stdio.h>  
 #include <string.h>  
 
+#define START_LINE 100
 
 void print_ent_file(const char *bname, const struct translation_unit* program);
 void print_ob_file(const char *bname, const struct translation_unit* program);
