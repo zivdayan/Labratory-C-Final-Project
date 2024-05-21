@@ -15,7 +15,27 @@
 extern char *strdup(const char *);
 char *strndup(const char *str, size_t size);
 
-/*Todo - fix when there is a space*/
+void trim_leading_spaces(char *str)
+{
+    int index = 0, i = 0;
+
+    /* Find the index of the first non-space character */
+    while (str[index] != '\0' && isspace((unsigned char)str[index]))
+    {
+        index++;
+    }
+
+    /* Shift all characters to the left */
+    if (index != 0)
+    {
+        while (str[index] != '\0')
+        {
+            str[i++] = str[index++];
+        }
+        str[i] = '\0'; /* Null-terminate the trimmed string */
+    }
+}
+
 void split_by_first_space(char *str, char **item1, char **item2)
 {
     /* Use strtok to split the string */
@@ -93,6 +113,8 @@ int macro_line(char *s, struct Macro **macro, struct Macro *macro_table, int *ta
 
     item1 = malloc(sizeof(char *) * (MAX_LINE_LEN + 1));
     item2 = malloc(sizeof(char *) * (MAX_LINE_LEN + 1));
+
+    trim_leading_spaces(s);
 
     split_by_first_space(s, &item1, &item2);
 

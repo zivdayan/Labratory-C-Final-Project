@@ -56,3 +56,5 @@ Tests/.DS_Store
 src/assembler
 
 *.ob
+*.ent
+*.ext
