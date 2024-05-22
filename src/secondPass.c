@@ -57,19 +57,18 @@ int second_pass(struct translation_unit *prog, const char *am_filename, FILE *am
                     {
                         if (line_struct.ast_options.inst.operands[i].addrs_mode == adddrs_index_label)
                         {
-                            symbol = serach_symbol(prog->symbol_table, prog->symCount, line_struct.ast_options.inst.operands[i].operand_options.label);
+                            symbol = search_symbol(prog->symbol_table, prog->symCount, line_struct.ast_options.inst.operands[i].operand_options.label);
                             if (symbol)
                             {
-                                prog->code_image[prog->IC] = symbol->address << 2; /* Todo: implement extern */
-                                prog->code_image[prog->IC] |= 2;                   /* Todo: implement extern */
+                                prog->code_image[prog->IC] = symbol->address << 2;
+                                prog->code_image[prog->IC] |= symbol->symType == symExtern ? 1 : 2;
 
                                 prog->IC++;
                             }
-                            symbol = serach_symbol(prog->symbol_table, prog->symCount, line_struct.ast_options.inst.operands[i].operand_options.index.index_option.label);
+                            symbol = search_symbol(prog->symbol_table, prog->symCount, line_struct.ast_options.inst.operands[i].operand_options.index.index_option.label);
                             if (symbol)
                             {
-                                prog->code_image[prog->IC] = symbol->address << 2; /* Todo: implement extern */
-                                                                                   /* Todo: implement extern */
+                                prog->code_image[prog->IC] = symbol->address << 2;
                             }
                             else
                             {
@@ -78,12 +77,11 @@ int second_pass(struct translation_unit *prog, const char *am_filename, FILE *am
                         }
                         else if (line_struct.ast_options.inst.operands[i].addrs_mode == adddrs_index_const)
                         {
-                            symbol = serach_symbol(prog->symbol_table, prog->symCount, line_struct.ast_options.inst.operands[i].operand_options.label);
+                            symbol = search_symbol(prog->symbol_table, prog->symCount, line_struct.ast_options.inst.operands[i].operand_options.label);
                             if (symbol)
                             {
-                                prog->code_image[prog->IC] = symbol->address << 2; /* Todo: implement extern */
-                                prog->code_image[prog->IC] |= 2;                   /* Todo: implement extern */
-
+                                prog->code_image[prog->IC] = symbol->address << 2;
+                                prog->code_image[prog->IC] |= symbol->symType == symExtern ? 1 : 2;
                                 prog->IC++;
                             }
                             prog->code_image[prog->IC] = line_struct.ast_options.inst.operands[i].operand_options.index.index_option.number << 2;
@@ -92,7 +90,7 @@ int second_pass(struct translation_unit *prog, const char *am_filename, FILE *am
 
                     else if (line_struct.ast_options.inst.operands[i].operand_type == label)
                     {
-                        symbol = serach_symbol(prog->symbol_table, prog->symCount, line_struct.ast_options.inst.operands[i].operand_options.label);
+                        symbol = search_symbol(prog->symbol_table, prog->symCount, line_struct.ast_options.inst.operands[i].operand_options.label);
                         if (symbol)
                         {
                             prog->code_image[prog->IC] = symbol->address << 2;
@@ -138,7 +136,7 @@ int second_pass(struct translation_unit *prog, const char *am_filename, FILE *am
                 }
             }
         }
+        line_counter++;
     }
-    line_counter++;
     return is_error;
 }

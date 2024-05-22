@@ -416,19 +416,18 @@ static int parse_inst_operand(char *operand, int operand_type, struct ast *ast, 
         if (!check_operand_addressing_mode(operand_type, inst, IMMEDIATE_ADDRESSING))
             return 0;
 
-        if (is_valid_label(immediate_operand))
-        {
-            ast->ast_options.inst.operands[operand_type_index].operand_type = label;
-            strcpy(ast->ast_options.inst.operands[operand_type_index].operand_options.label, immediate_operand);
-            ast->ast_options.inst.operands[operand_type_index].addrs_mode = addrs_immed_label;
-            return 1;
-        }
-
         if (is_number(immediate_operand, DEFAULT_INT, DEFAULT_INT))
         {
             ast->ast_options.inst.operands[operand_type_index].operand_type = num;
             ast->ast_options.inst.operands[operand_type_index].operand_options.immed = atoi(immediate_operand);
             ast->ast_options.inst.operands[operand_type_index].addrs_mode = addrs_immed_const;
+            return 1;
+        }
+        if (is_valid_label(immediate_operand))
+        {
+            ast->ast_options.inst.operands[operand_type_index].operand_type = label;
+            strcpy(ast->ast_options.inst.operands[operand_type_index].operand_options.label, immediate_operand);
+            ast->ast_options.inst.operands[operand_type_index].addrs_mode = addrs_immed_label;
             return 1;
         }
     }
@@ -767,6 +766,9 @@ struct ast *get_ast_from_line(char *line, struct Node *macro_list)
     operands_ptr = strip_first_element(&ssr);
     operands = *operands_ptr;
 
+    if (ssr.strings_count == 0)
+        return ast_ptr;
+
     if (is_define_line(ssr))
     {
         if (label_declared)
@@ -916,7 +918,7 @@ void string_sep(char *original_str, struct string_sep_result *ssr)
     do
     {
         ssr->strings[strings_count++] = str;
-        s = strpbrk(str, SPACES);
+        s = strpbrk(str, INNER_SPACES);
         if (s)
         {
             *s = '\0';

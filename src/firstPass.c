@@ -4,8 +4,6 @@
 #include <string.h>
 #include "utils.h"
 
-/* Todo change names and errors strings and move them to error_msg.h */
-
 int first_pass(struct translation_unit *prog, const char *am_filename, FILE *am_file, struct Node *macro_list)
 {
     char line[81] = {0};
@@ -30,7 +28,7 @@ int first_pass(struct translation_unit *prog, const char *am_filename, FILE *am_
         }
         if (line_struct.labelName[0] != '\0' && (line_struct.line_type == ast_inst || (line_struct.line_type == ast_dir && (line_struct.ast_options.dir.dir_type == ast_data || line_struct.ast_options.dir.dir_type == ast_string))))
         {
-            symbol = serach_symbol(prog->symbol_table, prog->symCount, line_struct.labelName);
+            symbol = search_symbol(prog->symbol_table, prog->symCount, line_struct.labelName);
             if (symbol)
             {
                 if (symbol->symType == symEntry)
@@ -73,7 +71,7 @@ int first_pass(struct translation_unit *prog, const char *am_filename, FILE *am_
                     memcpy(&prog->data_image[(prog->DC) + j], &line_struct.ast_options.dir.dir_options.data_array.data[j].data_value.number, sizeof(int));
                 else if (line_struct.ast_options.dir.dir_options.data_array.data[j].data_type == data_label)
                 {
-                    symbol = serach_symbol(prog->symbol_table, prog->symCount, line_struct.ast_options.dir.dir_options.data_array.data[j].data_value.label);
+                    symbol = search_symbol(prog->symbol_table, prog->symCount, line_struct.ast_options.dir.dir_options.data_array.data[j].data_value.label);
                     memcpy(&prog->data_image[(prog->DC) + j], &symbol->address, sizeof(int));
                 }
             }
@@ -100,7 +98,7 @@ int first_pass(struct translation_unit *prog, const char *am_filename, FILE *am_
         }
         else if (line_struct.line_type == ast_dir && line_struct.ast_options.dir.dir_type <= ast_entry)
         {
-            symbol = serach_symbol(prog->symbol_table, prog->symCount, line_struct.ast_options.dir.dir_options.label);
+            symbol = search_symbol(prog->symbol_table, prog->symCount, line_struct.ast_options.dir.dir_options.label);
             if (symbol && line_struct.ast_options.dir.dir_type == ast_entry)
             {
                 if (symbol->symType == symCode)

@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
     struct translation_unit *program;
     if (argc < 2)
     {
-        printf("ERROR: You need at least one argument.\n Example: ./assembler example");
+        printf("Error: You need at least one argument.\n Example: ./assembler example");
         return 1;
     }
     for (pargv = argv + 1; *pargv != argv[argc]; pargv++)
@@ -40,6 +40,11 @@ int main(int argc, char *argv[])
         printf("Starting preprocessor - %s \n", current_file);
 
         am_filename = preproc(current_file, output_macro_list);
+        if (am_filename == NULL)
+        {
+            printf("Error: %s is not exists \n", current_file);
+            continue;
+        }
 
         if (!strcmp(am_filename, ""))
             continue;

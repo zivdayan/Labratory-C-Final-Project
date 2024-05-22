@@ -5,12 +5,7 @@
 
 #include "preprocessor.h"
 #include "utils.h"
-
-#define as_file_ext ".as"
-#define am_file_ext ".am"
-#define MAX_MACRO_LEN 31
-#define SPACES " \t\v\f\n"
-#define MAX_LINE_LEN 80
+#include "global_consts.h"
 
 extern char *strdup(const char *);
 char *strndup(const char *str, size_t size);
@@ -110,12 +105,15 @@ int macro_line(char *s, struct Macro **macro, struct Macro *macro_table, int *ta
     char *c2;
     struct Macro *f;
 
-    item1 = malloc(sizeof(char *) * (MAX_LINE_LEN + 1));
-    item2 = malloc(sizeof(char *) * (MAX_LINE_LEN + 1));
+    item1 = malloc(sizeof(char *) * (MAX_LINE_LENGTH + 1));
+    item2 = malloc(sizeof(char *) * (MAX_LINE_LENGTH + 1));
 
     trim_leading_spaces(s);
 
     split_by_first_space(s, &item1, &item2);
+
+    if (*item1 == ';')
+        return 1;
 
     if (strstr(item1, "endmcr"))
     {
@@ -156,34 +154,24 @@ int macro_line(char *s, struct Macro **macro, struct Macro *macro_table, int *ta
     return 3;
 }
 
-char *strcat_with_malloc(const char *s1, const char *s2)
-{
-    size_t len_s1 = strlen(s1);
-    size_t len_s2 = strlen(s2);
-    size_t len_result = len_s1 + len_s2 + 1;
-    char *result = (char *)malloc(len_result * sizeof(char));
-    strcpy(result, s1);
-    strcat(result, s2);
-    return result;
-}
-
 char *preproc(char *bname, struct Node *output_macro_list)
 {
-    char line[MAX_LINE_LEN] = {0};
+    char line[MAX_LINE_LENGTH] = {0};
     struct Macro *macro_table = malloc(10 * sizeof(struct Macro));
     int macro_count = 0;
     FILE *as_file;
     FILE *am_file;
     struct Macro *macro = NULL;
-    char *asFileName = strcat_with_malloc(bname, as_file_ext);
-    char *amFileName = strcat_with_malloc(bname, am_file_ext);
+
+    char *am_filename = strcat_with_malloc(bname, AM_FILE_EXT);
+    char *as_filename = strcat_with_malloc(bname, AS_FILE_EXT);
 
     int i, j;
 
     output_macro_list = malloc(sizeof(struct Node) * MAX_LINE_LENGTH);
 
-    as_file = fopen(asFileName, "r");
-    am_file = fopen(amFileName, "w");
+    as_file = fopen(as_filename, "r");
+    am_file = fopen(am_filename, "w");
 
     if (!as_file || !am_file)
     {
@@ -191,7 +179,7 @@ char *preproc(char *bname, struct Node *output_macro_list)
         return NULL;
     }
 
-    while (fgets(line, MAX_LINE_LEN, as_file))
+    while (fgets(line, MAX_LINE_LENGTH, as_file))
     {
         switch (macro_line(line, &macro, macro_table, &macro_count))
         {
@@ -241,7 +229,7 @@ char *preproc(char *bname, struct Node *output_macro_list)
     }
 
     free(macro_table);
-    free(asFileName);
+    free(as_filename);
 
-    return amFileName;
+    return am_filename;
 }

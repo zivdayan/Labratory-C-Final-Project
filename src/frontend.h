@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include "error_msg.h"
 
-#define SPACES " \t\v\f"
+#define INNER_SPACES " \t\v\f"
 
 #define ERROR_CODE_44 44
 #define IMMEDIATE_ADDRESSING '0'

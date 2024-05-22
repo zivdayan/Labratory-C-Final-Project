@@ -3,6 +3,17 @@
 #include "frontend.h"
 #include "structs.h"
 
+char *strcat_with_malloc(const char *s1, const char *s2)
+{
+    size_t len_s1 = strlen(s1);
+    size_t len_s2 = strlen(s2);
+    size_t len_result = len_s1 + len_s2 + 1;
+    char *result = (char *)malloc(len_result * sizeof(char));
+    strcpy(result, s1);
+    strcat(result, s2);
+    return result;
+}
+
 void char_sanitize(char **original_str, char c)
 {
     char *str = *original_str;
@@ -32,7 +43,7 @@ void char_sanitize(char **original_str, char c)
     strcpy(*original_str, newstr);
 }
 
-struct symbol *serach_symbol(struct symbol *symbol_table, const int symbol_table_size, const char *name)
+struct symbol *search_symbol(struct symbol *symbol_table, const int symbol_table_size, const char *name)
 {
     int i;
     for (i = 0; i < symbol_table_size; i++)
