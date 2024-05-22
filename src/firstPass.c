@@ -6,47 +6,46 @@
 
 /* Todo change names and errors strings and move them to error_msg.h */
 
-int firstPass(struct translation_unit *prog, const char *amFileName, FILE *amFile, struct Node *macro_list)
+int first_pass(struct translation_unit *prog, const char *am_filename, FILE *am_file, struct Node *macro_list)
 {
     char line[81] = {0};
     int ic = 100, dc = 0;
-    int errorFlag = 0;
-    int lineC = 1;
+    int line_counter = 1;
+    int is_error = 0;
     int i;
     int j;
 
     struct ast line_struct = {0};
-    struct symbol *SymFind;
+    struct symbol *symbol;
 
-    while (fgets(line, sizeof(line), amFile))
+    while (fgets(line, sizeof(line), am_file))
     {
         line_struct = *get_ast_from_line(line, macro_list);
         if (line_struct.lineError[0] != '\0')
         {
-            printf("%s:%d:syntax error: %s", amFileName, lineC, line_struct.lineError);
-            lineC++;
-            errorFlag = 1;
+            printf("%s:%d:syntax error: %s", am_filename, line_counter, line_struct.lineError);
+            line_counter++;
+            is_error = 1;
             continue;
         }
         if (line_struct.labelName[0] != '\0' && (line_struct.line_type == ast_inst || (line_struct.line_type == ast_dir && (line_struct.ast_options.dir.dir_type == ast_data || line_struct.ast_options.dir.dir_type == ast_string))))
         {
-            SymFind = symbolLookUp(prog->symbol_table, prog->symCount, line_struct.labelName);
-            if (SymFind)
+            symbol = serach_symbol(prog->symbol_table, prog->symCount, line_struct.labelName);
+            if (symbol)
             {
-                if (SymFind->symType == symEntry)
+                if (symbol->symType == symEntry)
                 {
-                    SymFind->symType = line_struct.line_type == ast_inst ? symEntryCode : symEntryData;
-                    SymFind->address = line_struct.line_type == ast_inst ? ic : dc;
+                    symbol->symType = line_struct.line_type == ast_inst ? symEntryCode : symEntryData;
+                    symbol->address = line_struct.line_type == ast_inst ? ic : dc;
                 }
                 else
                 {
-                    printf("%s: error in line %d redefination of symbol '%s'\n", amFileName, lineC, line_struct.labelName);
-                    errorFlag = 1;
+                    printf("%s: Error in line %d, redefination of symbol '%s'\n", am_filename, line_counter, line_struct.labelName);
+                    is_error = 1;
                 }
             }
             else
             {
-                /* Todo - change it to dynamic data structure */
                 strcpy(prog->symbol_table[prog->symCount].symName, line_struct.labelName);
                 prog->symbol_table[prog->symCount].symType = line_struct.line_type == ast_inst ? symCode : symData;
                 prog->symbol_table[prog->symCount].address = line_struct.line_type == ast_inst ? ic : dc;
@@ -68,14 +67,14 @@ int firstPass(struct translation_unit *prog, const char *amFileName, FILE *amFil
         }
         else if (line_struct.line_type == ast_dir && line_struct.ast_options.dir.dir_type == ast_data)
         {
-            for(j=0;j<line_struct.ast_options.dir.dir_options.data_array.data_length;j++)
+            for (j = 0; j < line_struct.ast_options.dir.dir_options.data_array.data_length; j++)
             {
-                if(line_struct.ast_options.dir.dir_options.data_array.data[j].data_type == data_number)
-                    memcpy(&prog->data_image[(prog->DC)+j], &line_struct.ast_options.dir.dir_options.data_array.data[j].data_value.number, sizeof(int));
+                if (line_struct.ast_options.dir.dir_options.data_array.data[j].data_type == data_number)
+                    memcpy(&prog->data_image[(prog->DC) + j], &line_struct.ast_options.dir.dir_options.data_array.data[j].data_value.number, sizeof(int));
                 else if (line_struct.ast_options.dir.dir_options.data_array.data[j].data_type == data_label)
                 {
-                    SymFind = symbolLookUp(prog->symbol_table, prog->symCount, line_struct.ast_options.dir.dir_options.data_array.data[j].data_value.label);
-                    memcpy(&prog->data_image[(prog->DC)+j], &SymFind->address, sizeof(int));
+                    symbol = serach_symbol(prog->symbol_table, prog->symCount, line_struct.ast_options.dir.dir_options.data_array.data[j].data_value.label);
+                    memcpy(&prog->data_image[(prog->DC) + j], &symbol->address, sizeof(int));
                 }
             }
             dc += line_struct.ast_options.dir.dir_options.data_array.data_length;
@@ -83,12 +82,12 @@ int firstPass(struct translation_unit *prog, const char *amFileName, FILE *amFil
         }
         else if (line_struct.line_type == ast_dir && line_struct.ast_options.dir.dir_type == ast_string)
         {
-            for(j=0;j<strlen(line_struct.ast_options.dir.dir_options.string);j++)
+            for (j = 0; j < strlen(line_struct.ast_options.dir.dir_options.string); j++)
             {
-                memcpy(&prog->data_image[(prog->DC)+j], line_struct.ast_options.dir.dir_options.string + j, 1);
+                memcpy(&prog->data_image[(prog->DC) + j], line_struct.ast_options.dir.dir_options.string + j, 1);
             }
-            memset(&prog->data_image[(prog->DC)+strlen(line_struct.ast_options.dir.dir_options.string)],0,1);
-            
+            memset(&prog->data_image[(prog->DC) + strlen(line_struct.ast_options.dir.dir_options.string)], 0, 1);
+
             dc += strlen(line_struct.ast_options.dir.dir_options.string) + 1;
             prog->DC = dc;
         }
@@ -101,24 +100,24 @@ int firstPass(struct translation_unit *prog, const char *amFileName, FILE *amFil
         }
         else if (line_struct.line_type == ast_dir && line_struct.ast_options.dir.dir_type <= ast_entry)
         {
-            SymFind = symbolLookUp(prog->symbol_table, prog->symCount, line_struct.ast_options.dir.dir_options.label);
-            if (SymFind && line_struct.ast_options.dir.dir_type == ast_entry)
+            symbol = serach_symbol(prog->symbol_table, prog->symCount, line_struct.ast_options.dir.dir_options.label);
+            if (symbol && line_struct.ast_options.dir.dir_type == ast_entry)
             {
-                if (SymFind->symType == symCode)
+                if (symbol->symType == symCode)
                 {
-                    SymFind->symType = symEntryCode;
+                    symbol->symType = symEntryCode;
                 }
-                else if (SymFind->symType == symData)
+                else if (symbol->symType == symData)
                 {
-                    SymFind->symType = symEntryData;
+                    symbol->symType = symEntryData;
                 }
                 else
                 {
-                    printf("%s: error in line %d redefination of symbol: '%s'\n", amFileName, lineC, line_struct.ast_options.dir.dir_options.label);
-                    errorFlag = 1;
+                    printf("%s: Error in line %d, redefination of symbol: '%s'\n", am_filename, line_counter, line_struct.ast_options.dir.dir_options.label);
+                    is_error = 1;
                 }
             }
-            else if (!SymFind)
+            else if (!symbol)
             {
                 strcpy(prog->symbol_table[prog->symCount].symName, line_struct.ast_options.dir.dir_options.label);
                 prog->symbol_table[prog->symCount].symType = line_struct.ast_options.dir.dir_type;
@@ -126,18 +125,18 @@ int firstPass(struct translation_unit *prog, const char *amFileName, FILE *amFil
             }
             else
             {
-                printf("%s: error in line %d redefination of symbol: '%s'\n", amFileName, lineC, line_struct.ast_options.dir.dir_options.label);
-                errorFlag = 1;
+                printf("%s: Error in line %d, redefination of symbol: '%s'\n", am_filename, line_counter, line_struct.ast_options.dir.dir_options.label);
+                is_error = 1;
             }
         }
-        lineC++;
+        line_counter++;
     }
     for (i = 0; i < prog->symCount; i++)
     {
         if (prog->symbol_table[i].symType == symEntry)
         {
-            printf("%s: error symbol:'%s' declared entry but was never defined", amFileName, prog->symbol_table[i].symName);
-            errorFlag = 1;
+            printf("%s: Error symbol:'%s' declared entry but was never defined", am_filename, prog->symbol_table[i].symName);
+            is_error = 1;
         }
         if (prog->symbol_table[i].symType == symData || prog->symbol_table[i].symType == symEntryData)
         {
@@ -149,5 +148,5 @@ int firstPass(struct translation_unit *prog, const char *amFileName, FILE *amFil
             prog->entries_count++;
         }
     }
-    return errorFlag;
+    return is_error;
 }

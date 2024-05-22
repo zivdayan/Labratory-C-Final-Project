@@ -33,21 +33,21 @@ int main(int argc, char *argv[])
     }
     for (pargv = argv + 1; *pargv != argv[argc]; pargv++)
     {
-        char *amFileName = "";
-        FILE *amFile;
+        char *am_filename = "";
+        FILE *am_file;
         char *current_file = *pargv;
         struct Node *output_macro_list = NULL;
 
         printf("Starting preprocessor - %s \n", current_file);
 
-        amFileName = preproc(current_file, output_macro_list);
+        am_filename = preproc(current_file, output_macro_list);
 
-        if (!strcmp(amFileName, ""))
+        if (!strcmp(am_filename, ""))
             continue;
 
-        printf("Preprocessor done, file name: %s \n", amFileName);
+        printf("Preprocessor done, file name: %s \n", am_filename);
 
-        amFile = fopen(amFileName, "r");
+        am_file = fopen(am_filename, "r");
 
         printf("Starting first pass - %s \n", current_file);
 
@@ -55,13 +55,13 @@ int main(int argc, char *argv[])
 
         program = malloc(sizeof(struct translation_unit));
 
-        if (!firstPass(program, amFileName, amFile, output_macro_list))
+        if (!first_pass(program, am_filename, am_file, output_macro_list))
         {
-            rewind(amFile);
+            rewind(am_file);
             printf("Starting second pass - %s \n", current_file);
 
             /* -- Execute Second pass -- */
-            if (!secondPass(program, amFileName, amFile, output_macro_list))
+            if (!second_pass(program, am_filename, am_file, output_macro_list))
             {
 
                 print_ob_file(current_file, program);

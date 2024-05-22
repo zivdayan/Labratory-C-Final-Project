@@ -32,7 +32,7 @@ void char_sanitize(char **original_str, char c)
     strcpy(*original_str, newstr);
 }
 
-struct symbol *symbolLookUp(struct symbol *symbol_table, const int symbol_table_size, const char *name)
+struct symbol *serach_symbol(struct symbol *symbol_table, const int symbol_table_size, const char *name)
 {
     int i;
     for (i = 0; i < symbol_table_size; i++)
@@ -45,7 +45,7 @@ struct symbol *symbolLookUp(struct symbol *symbol_table, const int symbol_table_
     return NULL;
 }
 
-struct extr *extSearch(struct extr *externals, const int externals_size, const char *name)
+struct extr *search_external(struct extr *externals, const int externals_size, const char *name)
 {
     int i;
     for (i = 0; i < externals_size; i++)
@@ -58,7 +58,7 @@ struct extr *extSearch(struct extr *externals, const int externals_size, const c
     return NULL;
 }
 
-int chooseAddressing(int addrs_mode)
+int choose_addressing(int addrs_mode)
 {
 
     switch (addrs_mode)

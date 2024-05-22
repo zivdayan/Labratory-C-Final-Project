@@ -57,7 +57,6 @@ void split_by_first_space(char *str, char **item1, char **item2)
     }
 }
 
-/*Todo: change macro table to nodes list*/
 struct Macro
 {
     char macroName[MAX_MACRO_LEN + 1];
@@ -65,7 +64,7 @@ struct Macro
     int lineCounter;
 };
 
-struct Macro *searchMacro(struct Macro *macroTable, const int tableSize, char *name)
+struct Macro *search_macro(struct Macro *macroTable, const int tableSize, char *name)
 {
     int i;
     name[strcspn(name, "\r\n")] = 0; /* Mark end of line */
@@ -142,7 +141,7 @@ int macro_line(char *s, struct Macro **macro, struct Macro *macro_table, int *ta
     c2 = strpbrk(item2, SPACES);
     if (c2)
         *c2 = '\0';
-    f = searchMacro(macro_table, *table_size, item1);
+    f = search_macro(macro_table, *table_size, item1);
 
     free(item1);
     if (strcmp(item2, ""))
@@ -157,7 +156,7 @@ int macro_line(char *s, struct Macro **macro, struct Macro *macro_table, int *ta
     return 3;
 }
 
-char *strcatWithMalloc(const char *s1, const char *s2)
+char *strcat_with_malloc(const char *s1, const char *s2)
 {
     size_t len_s1 = strlen(s1);
     size_t len_s2 = strlen(s2);
@@ -176,8 +175,8 @@ char *preproc(char *bname, struct Node *output_macro_list)
     FILE *as_file;
     FILE *am_file;
     struct Macro *macro = NULL;
-    char *asFileName = strcatWithMalloc(bname, as_file_ext);
-    char *amFileName = strcatWithMalloc(bname, am_file_ext);
+    char *asFileName = strcat_with_malloc(bname, as_file_ext);
+    char *amFileName = strcat_with_malloc(bname, am_file_ext);
 
     int i, j;
 
