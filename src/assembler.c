@@ -25,7 +25,6 @@ int main(int argc, char *argv[])
 {
     char **pargv;
     struct translation_unit *program;
-    /* char *as_file, *am_file */;
     if (argc < 2)
     {
         printf("ERROR: You need at least one argument.\n Example: ./assembler example");
